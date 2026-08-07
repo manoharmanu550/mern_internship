@@ -1,0 +1,38 @@
+.likes-page{
+    max-width:1200px;
+    margin:40px auto;
+    padding:20px;
+}
+
+.likes-header{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:15px;
+    margin-bottom:15px;
+}
+
+.likes-header h1{
+    font-size:42px;
+    font-weight:700;
+    color:#2563eb;
+    margin:0;
+}
+
+.likes-header span{
+    font-size:48px;
+}
+
+.total-likes{
+    text-align:center;
+    font-size:20px;
+    font-weight:600;
+    color:#555;
+    margin-bottom:35px;
+}
+
+.likes-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(340px,1fr));
+    gap:30px;
+}
