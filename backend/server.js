@@ -34,6 +34,8 @@ app.use("/api/bookmarks", bookmarkRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api/dashboard", require("./routes/dashboardRoutes"));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 
 // MongoDB Connection

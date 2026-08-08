@@ -11,7 +11,6 @@ function CreatePost() {
   const [excerpt, setExcerpt] = useState("");
   const [coverImage, setCoverImage] = useState("");
   const [status, setStatus] = useState("published");
-  const [tags, setTags] = useState("");
 
   const [preview, setPreview] = useState("");
   const [loading, setLoading] = useState(false);
@@ -49,10 +48,7 @@ function CreatePost() {
           excerpt,
           coverImage,
           status,
-          tags: tags
-            .split(",")
-            .map((tag) => tag.trim())
-            .filter((tag) => tag !== ""),
+          tags: [],
         },
         {
           headers: {
@@ -62,9 +58,9 @@ function CreatePost() {
       );
 
       alert("🎉 Post Published Successfully");
-
       navigate("/");
     } catch (err) {
+      console.log(err);
       alert(err.response?.data?.message || "Failed to create post");
     } finally {
       setLoading(false);
@@ -75,7 +71,7 @@ function CreatePost() {
     <div className="create-wrapper">
       <div className="create-card">
 
-        <h1> Create New Blog</h1>
+        <h1>Create New Blog</h1>
         <p>Share your ideas with the world.</p>
 
         <form onSubmit={submitHandler}>
@@ -133,15 +129,6 @@ function CreatePost() {
             <option value="draft">Draft</option>
           </select>
 
-          <label>Tags</label>
-
-          <input
-            type="text"
-            placeholder="React, Node, MongoDB"
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-          />
-
           <button
             type="submit"
             disabled={loading}
@@ -151,6 +138,7 @@ function CreatePost() {
           </button>
 
         </form>
+
       </div>
     </div>
   );

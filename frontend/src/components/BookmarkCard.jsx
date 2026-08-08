@@ -5,6 +5,11 @@ function BookmarkCard({ bookmark, refresh }) {
   // Get actual post object
   const post = bookmark.post || bookmark;
 
+  // Debug logs
+  console.log("Bookmark Object:", bookmark);
+  console.log("Post Object:", post);
+  console.log("Post ID:", post._id);
+
   const removeBookmark = async () => {
     const ok = window.confirm("Remove this bookmark?");
 
@@ -23,11 +28,9 @@ function BookmarkCard({ bookmark, refresh }) {
         refresh();
       }
     } catch (err) {
-      console.log(err);
-      alert(
-        err.response?.data?.message ||
-          "Failed to remove bookmark"
-      );
+      console.log("DELETE Error:", err);
+      console.log("Response:", err.response);
+      alert(err.response?.data?.message || "Failed to remove bookmark");
     }
   };
 
@@ -42,19 +45,18 @@ function BookmarkCard({ bookmark, refresh }) {
       }}
     >
       <img
-  src={
-    post.coverImage && post.coverImage.trim() !== ""
-      ? post.coverImage
-      : "https://via.placeholder.com/600x350?text=No+Image"
-  }
-  alt={post.title}
-  style={{
-    width: "100%",
-    height: "220px",
-    objectFit: "cover",
-  }}
-/>
-      
+        src={
+          post.coverImage && post.coverImage.trim() !== ""
+            ? post.coverImage
+            : "https://via.placeholder.com/600x350?text=No+Image"
+        }
+        alt={post.title}
+        style={{
+          width: "100%",
+          height: "220px",
+          objectFit: "cover",
+        }}
+      />
 
       <div style={{ padding: "15px" }}>
         <h2>{post.title}</h2>
@@ -62,8 +64,7 @@ function BookmarkCard({ bookmark, refresh }) {
         <p>{post.excerpt}</p>
 
         <p>
-          <strong>Author:</strong>{" "}
-          {post.author?.name || "Unknown"}
+          <strong>Author:</strong> {post.author?.name || "Unknown"}
         </p>
 
         <div
