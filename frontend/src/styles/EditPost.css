@@ -1,0 +1,85 @@
+.edit-page{
+    max-width:800px;
+    margin:40px auto;
+    padding:20px;
+}
+
+.edit-header{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:15px;
+    margin-bottom:35px;
+}
+
+.edit-header span{
+    font-size:45px;
+}
+
+.edit-header h1{
+    font-size:48px;
+    color:#fff;
+    background:linear-gradient(135deg,#2563eb,#1d4ed8);
+    padding:12px 35px;
+    border-radius:12px;
+    box-shadow:0 10px 25px rgba(37,99,235,.35);
+}
+
+.edit-form{
+    background:#fff;
+    padding:35px;
+    border-radius:18px;
+    box-shadow:0 10px 25px rgba(0,0,0,.12);
+}
+
+.edit-form label{
+    display:block;
+    margin-top:18px;
+    margin-bottom:8px;
+    font-size:17px;
+    font-weight:600;
+    color:#333;
+}
+
+.edit-form input,
+.edit-form textarea,
+.edit-form select{
+    width:100%;
+    padding:14px;
+    border:1px solid #ddd;
+    border-radius:10px;
+    font-size:16px;
+    outline:none;
+    transition:.3s;
+    box-sizing:border-box;
+}
+
+.edit-form input:focus,
+.edit-form textarea:focus,
+.edit-form select:focus{
+    border-color:#2563eb;
+    box-shadow:0 0 8px rgba(37,99,235,.25);
+}
+
+.edit-form textarea{
+    resize:vertical;
+}
+
+.update-btn{
+    width:100%;
+    margin-top:30px;
+    padding:15px;
+    border:none;
+    border-radius:10px;
+    background:linear-gradient(135deg,#2563eb,#1d4ed8);
+    color:#fff;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.update-btn:hover{
+    transform:translateY(-3px);
+    box-shadow:0 10px 20px rgba(37,99,235,.35);
+}
