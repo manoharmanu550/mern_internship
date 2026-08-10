@@ -2,6 +2,7 @@ import "../styles/Login.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
+import { Link } from "react-router-dom";
 
 function Login() {
   const navigate = useNavigate();
@@ -48,6 +49,11 @@ function Login() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
+        <div className="forgot-password">
+  <Link to="/forgot-password">
+    Forgot Password?
+  </Link>
+</div>
 
         <button onClick={handleLogin}>
           Login

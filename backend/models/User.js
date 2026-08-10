@@ -5,29 +5,49 @@ const userSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
-      trim: true,
+      trim: true
     },
+
     email: {
       type: String,
       required: true,
       unique: true,
       lowercase: true,
+      trim: true
     },
+
     password: {
       type: String,
-      required: true,
+      required: true
     },
+
     bio: {
       type: String,
-      default: "",
+      maxlength: 200,
+      default: ""
     },
+
     avatarUrl: {
       type: String,
-      default: "",
+      default: ""
     },
+
+    // ===============================
+    // FORGOT PASSWORD FIELDS
+    // ===============================
+
+    resetPasswordToken: {
+      type: String,
+      default: null
+    },
+
+    resetPasswordExpire: {
+      type: Date,
+      default: null
+    }
   },
   {
-    timestamps: true,
+    timestamps: true
   }
 );
 

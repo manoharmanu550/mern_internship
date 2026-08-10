@@ -14,6 +14,9 @@ import Bookmarks from "./pages/Bookmarks";
 import Likes from "./pages/Likes";
 import Dashboard from "./pages/Dashboard";
 
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+
 import "./App.css";
 
 function App() {
@@ -22,18 +25,51 @@ function App() {
       <Navbar />
 
       <Routes>
+
+        {/* Existing Routes */}
+
         <Route path="/" element={<Home />} />
+
         <Route path="/login" element={<Login />} />
+
         <Route path="/register" element={<Register />} />
+
         <Route path="/create" element={<CreatePost />} />
+
         <Route path="/profile" element={<Profile />} />
+
         <Route path="/search" element={<Search />} />
+
         <Route path="/edit/:id" element={<EditPost />} />
+
         <Route path="/post/:id" element={<SinglePost />} />
+
         <Route path="/bookmarks" element={<Bookmarks />} />
+
         <Route path="/likes" element={<Likes />} />
+
         <Route path="/dashboard" element={<Dashboard />} />
-        
+
+
+        {/* ======================================
+            FORGOT PASSWORD
+        ====================================== */}
+
+        <Route
+          path="/forgot-password"
+          element={<ForgotPassword />}
+        />
+
+
+        {/* ======================================
+            RESET PASSWORD
+        ====================================== */}
+
+        <Route
+          path="/reset-password/:token"
+          element={<ResetPassword />}
+        />
+
       </Routes>
     </>
   );
