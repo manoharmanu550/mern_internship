@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
 const User = require("../models/User");
 
 // ======================================================
@@ -152,7 +153,7 @@ const login = async (req, res) => {
 
 // ======================================================
 // FORGOT PASSWORD
-// Uses Resend HTTPS API
+// Uses Gmail SMTP + Nodemailer
 // ======================================================
 
 const forgotPassword = async (req, res) => {
@@ -181,15 +182,24 @@ const forgotPassword = async (req, res) => {
       });
     }
 
-    // Check Resend API key
-    if (!process.env.RESEND_API_KEY) {
+    // ==================================================
+    // CHECK EMAIL CONFIGURATION
+    // ==================================================
+
+    if (!process.env.EMAIL_USER) {
       return res.status(500).json({
         success: false,
-        message: "RESEND_API_KEY is not configured"
+        message: "EMAIL_USER is not configured"
       });
     }
 
-    // Check frontend URL
+    if (!process.env.EMAIL_PASS) {
+      return res.status(500).json({
+        success: false,
+        message: "EMAIL_PASS is not configured"
+      });
+    }
+
     if (!process.env.FRONTEND_URL) {
       return res.status(500).json({
         success: false,
@@ -229,131 +239,108 @@ const forgotPassword = async (req, res) => {
       `${frontendURL}/reset-password/${resetToken}`;
 
     // ==================================================
-    // SEND EMAIL USING RESEND
+    // CREATE GMAIL SMTP TRANSPORTER
     // ==================================================
 
-    const emailResponse = await fetch(
-      "https://api.resend.com/emails",
-      {
-        method: "POST",
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
 
-        headers: {
-          Authorization:
-            `Bearer ${process.env.RESEND_API_KEY}`,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
 
-          "Content-Type": "application/json"
-        },
+    // ==================================================
+    // VERIFY SMTP CONNECTION
+    // ==================================================
 
-        body: JSON.stringify({
-          from:
-            "MERN Internship <onboarding@resend.dev>",
+    await transporter.verify();
 
-          to: [user.email],
+    // ==================================================
+    // SEND PASSWORD RESET EMAIL
+    // ==================================================
 
-          subject:
-            "Password Reset Request",
+    const mailOptions = {
+      from: `"MERN Internship" <${process.env.EMAIL_USER}>`,
 
-          html: `
-            <div
+      to: user.email,
+
+      subject: "Password Reset Request",
+
+      html: `
+        <div
+          style="
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: auto;
+            padding: 30px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+          "
+        >
+
+          <h2 style="color:#2563eb;">
+            Password Reset
+          </h2>
+
+          <p>
+            Hello ${user.name || "User"},
+          </p>
+
+          <p>
+            We received a request to reset your password.
+          </p>
+
+          <p>
+            Click the button below to create a new password.
+          </p>
+
+          <div style="margin:25px 0;">
+
+            <a
+              href="${resetURL}"
               style="
-                font-family: Arial, sans-serif;
-                max-width: 600px;
-                margin: auto;
-                padding: 30px;
-                border: 1px solid #ddd;
-                border-radius: 10px;
+                display:inline-block;
+                padding:12px 22px;
+                background:#2563eb;
+                color:#ffffff;
+                text-decoration:none;
+                border-radius:6px;
+                font-weight:bold;
               "
             >
+              Reset Password
+            </a>
 
-              <h2 style="color:#2563eb;">
-                Password Reset
-              </h2>
+          </div>
 
-              <p>
-                Hello ${user.name || "User"},
-              </p>
+          <p>
+            This password reset link will expire in
+            <strong>15 minutes</strong>.
+          </p>
 
-              <p>
-                We received a request to reset your password.
-              </p>
+          <p>
+            If you did not request this password reset,
+            you can safely ignore this email.
+          </p>
 
-              <p>
-                Click the button below to create a new password.
-              </p>
+          <hr />
 
-              <div style="margin:25px 0;">
+          <p
+            style="
+              font-size:12px;
+              color:#777;
+            "
+          >
+            MERN Internship
+          </p>
 
-                <a
-                  href="${resetURL}"
-                  style="
-                    display:inline-block;
-                    padding:12px 22px;
-                    background:#2563eb;
-                    color:#ffffff;
-                    text-decoration:none;
-                    border-radius:6px;
-                    font-weight:bold;
-                  "
-                >
-                  Reset Password
-                </a>
+        </div>
+      `
+    };
 
-              </div>
-
-              <p>
-                This password reset link will expire in
-                <strong>15 minutes</strong>.
-              </p>
-
-              <p>
-                If you did not request this password reset,
-                you can safely ignore this email.
-              </p>
-
-              <hr />
-
-              <p
-                style="
-                  font-size:12px;
-                  color:#777;
-                "
-              >
-                MERN Internship
-              </p>
-
-            </div>
-          `
-        })
-      }
-    );
-
-    const emailResult =
-      await emailResponse.json();
-
-    // ==================================================
-    // RESEND ERROR
-    // ==================================================
-
-    if (!emailResponse.ok) {
-
-      // Remove token if email failed
-      user.resetPasswordToken = null;
-      user.resetPasswordExpire = null;
-
-      await user.save();
-
-      console.error(
-        "RESEND ERROR:",
-        emailResult
-      );
-
-      return res.status(500).json({
-        success: false,
-        message:
-          emailResult?.message ||
-          "Unable to send password reset email"
-      });
-    }
+    const info = await transporter.sendMail(mailOptions);
 
     console.log(
       "Password reset email sent to:",
@@ -361,8 +348,8 @@ const forgotPassword = async (req, res) => {
     );
 
     console.log(
-      "Resend Email ID:",
-      emailResult.id
+      "Message ID:",
+      info.messageId
     );
 
     return res.status(200).json({
@@ -373,10 +360,39 @@ const forgotPassword = async (req, res) => {
 
   } catch (error) {
 
+    // ==================================================
+    // EMAIL ERROR
+    // ==================================================
+
     console.error(
-      "FORGOT PASSWORD ERROR:",
+      "GMAIL SMTP ERROR:",
       error
     );
+
+    // Remove token if email failed
+    try {
+      const { email } = req.body;
+
+      if (email) {
+        const cleanEmail = email.toLowerCase().trim();
+
+        const user = await User.findOne({
+          email: cleanEmail
+        });
+
+        if (user) {
+          user.resetPasswordToken = null;
+          user.resetPasswordExpire = null;
+
+          await user.save();
+        }
+      }
+    } catch (cleanupError) {
+      console.error(
+        "TOKEN CLEANUP ERROR:",
+        cleanupError
+      );
+    }
 
     return res.status(500).json({
       success: false,
@@ -420,13 +436,19 @@ const resetPassword = async (req, res) => {
       });
     }
 
-    // Hash reset token
+    // ==================================================
+    // HASH RESET TOKEN
+    // ==================================================
+
     const hashedToken = crypto
       .createHash("sha256")
       .update(token)
       .digest("hex");
 
-    // Find user with valid token
+    // ==================================================
+    // FIND USER WITH VALID TOKEN
+    // ==================================================
+
     const user = await User.findOne({
       resetPasswordToken: hashedToken,
 
@@ -443,13 +465,19 @@ const resetPassword = async (req, res) => {
       });
     }
 
-    // Hash new password
+    // ==================================================
+    // HASH NEW PASSWORD
+    // ==================================================
+
     user.password = await bcrypt.hash(
       password,
       10
     );
 
-    // Remove reset token
+    // ==================================================
+    // REMOVE RESET TOKEN
+    // ==================================================
+
     user.resetPasswordToken = null;
     user.resetPasswordExpire = null;
 
