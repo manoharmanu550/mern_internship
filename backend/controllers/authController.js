@@ -1,35 +1,7 @@
 const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
 const User = require("../models/User");
-
-// ======================================================
-// GMAIL SMTP CONFIGURATION
-// ======================================================
-
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
-
-  // Force IPv4
-  family: 4,
-
-  // Use STARTTLS
-  requireTLS: true,
-
-  // Prevent request from hanging forever
-  connectionTimeout: 30000,
-  greetingTimeout: 30000,
-  socketTimeout: 30000
-});
-
 
 // ======================================================
 // REGISTER
@@ -180,7 +152,7 @@ const login = async (req, res) => {
 
 // ======================================================
 // FORGOT PASSWORD
-// Uses Gmail SMTP
+// Uses Resend HTTPS API
 // ======================================================
 
 const forgotPassword = async (req, res) => {
@@ -209,22 +181,21 @@ const forgotPassword = async (req, res) => {
       });
     }
 
-    // Check Gmail credentials
-    if (!process.env.EMAIL_USER) {
+    // ==================================================
+    // CHECK RESEND API KEY
+    // ==================================================
+
+    if (!process.env.RESEND_API_KEY) {
       return res.status(500).json({
         success: false,
-        message: "EMAIL_USER is not configured"
+        message: "RESEND_API_KEY is not configured"
       });
     }
 
-    if (!process.env.EMAIL_PASS) {
-      return res.status(500).json({
-        success: false,
-        message: "EMAIL_PASS is not configured"
-      });
-    }
+    // ==================================================
+    // CHECK FRONTEND URL
+    // ==================================================
 
-    // Check frontend URL
     if (!process.env.FRONTEND_URL) {
       return res.status(500).json({
         success: false,
@@ -267,98 +238,149 @@ const forgotPassword = async (req, res) => {
 
 
     // ==================================================
-    // GMAIL EMAIL
+    // EMAIL HTML
     // ==================================================
 
-    const mailOptions = {
-      from: `"MERN Internship" <${process.env.EMAIL_USER}>`,
+    const emailHTML = `
+      <div
+        style="
+          font-family: Arial, sans-serif;
+          max-width: 600px;
+          margin: auto;
+          padding: 30px;
+          border: 1px solid #ddd;
+          border-radius: 10px;
+        "
+      >
 
-      to: user.email,
+        <h2 style="color:#2563eb;">
+          Password Reset
+        </h2>
 
-      subject: "Password Reset Request",
+        <p>
+          Hello ${user.name || "User"},
+        </p>
 
-      html: `
-        <div
-          style="
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: auto;
-            padding: 30px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-          "
-        >
+        <p>
+          We received a request to reset your password.
+        </p>
 
-          <h2 style="color:#2563eb;">
-            Password Reset
-          </h2>
+        <p>
+          Click the button below to create a new password.
+        </p>
 
-          <p>
-            Hello ${user.name || "User"},
-          </p>
+        <div style="margin:25px 0;">
 
-          <p>
-            We received a request to reset your password.
-          </p>
-
-          <p>
-            Click the button below to create a new password.
-          </p>
-
-          <div style="margin:25px 0;">
-
-            <a
-              href="${resetURL}"
-              style="
-                display:inline-block;
-                padding:12px 22px;
-                background:#2563eb;
-                color:#ffffff;
-                text-decoration:none;
-                border-radius:6px;
-                font-weight:bold;
-              "
-            >
-              Reset Password
-            </a>
-
-          </div>
-
-          <p>
-            This password reset link will expire in
-            <strong>15 minutes</strong>.
-          </p>
-
-          <p>
-            If you did not request this password reset,
-            you can safely ignore this email.
-          </p>
-
-          <hr />
-
-          <p
+          <a
+            href="${resetURL}"
             style="
-              font-size:12px;
-              color:#777;
+              display:inline-block;
+              padding:12px 22px;
+              background:#2563eb;
+              color:#ffffff;
+              text-decoration:none;
+              border-radius:6px;
+              font-weight:bold;
             "
           >
-            MERN Internship
-          </p>
+            Reset Password
+          </a>
 
         </div>
-      `
-    };
+
+        <p>
+          This password reset link will expire in
+          <strong>15 minutes</strong>.
+        </p>
+
+        <p>
+          If you did not request this password reset,
+          you can safely ignore this email.
+        </p>
+
+        <hr />
+
+        <p
+          style="
+            font-size:12px;
+            color:#777;
+          "
+        >
+          MERN Internship
+        </p>
+
+      </div>
+    `;
 
 
     // ==================================================
-    // SEND EMAIL
+    // SEND EMAIL USING RESEND HTTPS API
     // ==================================================
 
     try {
 
-      const info = await transporter.sendMail(
-        mailOptions
+      const emailResponse = await fetch(
+        "https://api.resend.com/emails",
+        {
+          method: "POST",
+
+          headers: {
+            Authorization:
+              `Bearer ${process.env.RESEND_API_KEY}`,
+
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+
+            // Resend testing sender
+            from:
+              "MERN Internship <onboarding@resend.dev>",
+
+            to: [user.email],
+
+            subject:
+              "Password Reset Request",
+
+            html: emailHTML
+          })
+        }
       );
+
+
+      const emailResult =
+        await emailResponse.json();
+
+
+      // ==================================================
+      // RESEND ERROR
+      // ==================================================
+
+      if (!emailResponse.ok) {
+
+        // Remove token if email failed
+        user.resetPasswordToken = null;
+        user.resetPasswordExpire = null;
+
+        await user.save();
+
+        console.error(
+          "RESEND ERROR:",
+          emailResult
+        );
+
+        return res.status(500).json({
+          success: false,
+          message:
+            emailResult?.message ||
+            "Unable to send password reset email"
+        });
+      }
+
+
+      // ==================================================
+      // EMAIL SENT SUCCESSFULLY
+      // ==================================================
 
       console.log(
         "Password reset email sent to:",
@@ -366,8 +388,8 @@ const forgotPassword = async (req, res) => {
       );
 
       console.log(
-        "Message ID:",
-        info.messageId
+        "Resend Email ID:",
+        emailResult.id
       );
 
     } catch (emailError) {
@@ -379,7 +401,7 @@ const forgotPassword = async (req, res) => {
       await user.save();
 
       console.error(
-        "GMAIL SMTP ERROR:",
+        "RESEND HTTPS API ERROR:",
         emailError
       );
 
