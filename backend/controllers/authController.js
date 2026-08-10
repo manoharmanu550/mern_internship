@@ -5,6 +5,33 @@ const nodemailer = require("nodemailer");
 const User = require("../models/User");
 
 // ======================================================
+// GMAIL SMTP CONFIGURATION
+// ======================================================
+
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
+
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  },
+
+  // Force IPv4
+  family: 4,
+
+  // Use STARTTLS
+  requireTLS: true,
+
+  // Prevent request from hanging forever
+  connectionTimeout: 30000,
+  greetingTimeout: 30000,
+  socketTimeout: 30000
+});
+
+
+// ======================================================
 // REGISTER
 // ======================================================
 
@@ -153,7 +180,7 @@ const login = async (req, res) => {
 
 // ======================================================
 // FORGOT PASSWORD
-// Uses Gmail SMTP + Nodemailer
+// Uses Gmail SMTP
 // ======================================================
 
 const forgotPassword = async (req, res) => {
@@ -182,10 +209,7 @@ const forgotPassword = async (req, res) => {
       });
     }
 
-    // ==================================================
-    // CHECK EMAIL CONFIGURATION
-    // ==================================================
-
+    // Check Gmail credentials
     if (!process.env.EMAIL_USER) {
       return res.status(500).json({
         success: false,
@@ -200,12 +224,14 @@ const forgotPassword = async (req, res) => {
       });
     }
 
+    // Check frontend URL
     if (!process.env.FRONTEND_URL) {
       return res.status(500).json({
         success: false,
         message: "FRONTEND_URL is not configured"
       });
     }
+
 
     // ==================================================
     // GENERATE RESET TOKEN
@@ -228,6 +254,7 @@ const forgotPassword = async (req, res) => {
 
     await user.save();
 
+
     // ==================================================
     // RESET URL
     // ==================================================
@@ -238,27 +265,9 @@ const forgotPassword = async (req, res) => {
     const resetURL =
       `${frontendURL}/reset-password/${resetToken}`;
 
-    // ==================================================
-    // CREATE GMAIL SMTP TRANSPORTER
-    // ==================================================
-
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-    });
 
     // ==================================================
-    // VERIFY SMTP CONNECTION
-    // ==================================================
-
-    await transporter.verify();
-
-    // ==================================================
-    // SEND PASSWORD RESET EMAIL
+    // GMAIL EMAIL
     // ==================================================
 
     const mailOptions = {
@@ -340,17 +349,51 @@ const forgotPassword = async (req, res) => {
       `
     };
 
-    const info = await transporter.sendMail(mailOptions);
 
-    console.log(
-      "Password reset email sent to:",
-      user.email
-    );
+    // ==================================================
+    // SEND EMAIL
+    // ==================================================
 
-    console.log(
-      "Message ID:",
-      info.messageId
-    );
+    try {
+
+      const info = await transporter.sendMail(
+        mailOptions
+      );
+
+      console.log(
+        "Password reset email sent to:",
+        user.email
+      );
+
+      console.log(
+        "Message ID:",
+        info.messageId
+      );
+
+    } catch (emailError) {
+
+      // Remove token if email failed
+      user.resetPasswordToken = null;
+      user.resetPasswordExpire = null;
+
+      await user.save();
+
+      console.error(
+        "GMAIL SMTP ERROR:",
+        emailError
+      );
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Unable to send password reset email"
+      });
+    }
+
+
+    // ==================================================
+    // SUCCESS RESPONSE
+    // ==================================================
 
     return res.status(200).json({
       success: true,
@@ -360,39 +403,10 @@ const forgotPassword = async (req, res) => {
 
   } catch (error) {
 
-    // ==================================================
-    // EMAIL ERROR
-    // ==================================================
-
     console.error(
-      "GMAIL SMTP ERROR:",
+      "FORGOT PASSWORD ERROR:",
       error
     );
-
-    // Remove token if email failed
-    try {
-      const { email } = req.body;
-
-      if (email) {
-        const cleanEmail = email.toLowerCase().trim();
-
-        const user = await User.findOne({
-          email: cleanEmail
-        });
-
-        if (user) {
-          user.resetPasswordToken = null;
-          user.resetPasswordExpire = null;
-
-          await user.save();
-        }
-      }
-    } catch (cleanupError) {
-      console.error(
-        "TOKEN CLEANUP ERROR:",
-        cleanupError
-      );
-    }
 
     return res.status(500).json({
       success: false,
@@ -436,6 +450,7 @@ const resetPassword = async (req, res) => {
       });
     }
 
+
     // ==================================================
     // HASH RESET TOKEN
     // ==================================================
@@ -444,6 +459,7 @@ const resetPassword = async (req, res) => {
       .createHash("sha256")
       .update(token)
       .digest("hex");
+
 
     // ==================================================
     // FIND USER WITH VALID TOKEN
@@ -465,6 +481,7 @@ const resetPassword = async (req, res) => {
       });
     }
 
+
     // ==================================================
     // HASH NEW PASSWORD
     // ==================================================
@@ -473,6 +490,7 @@ const resetPassword = async (req, res) => {
       password,
       10
     );
+
 
     // ==================================================
     // REMOVE RESET TOKEN
@@ -483,10 +501,16 @@ const resetPassword = async (req, res) => {
 
     await user.save();
 
+
     console.log(
       "Password reset successful for:",
       user.email
     );
+
+
+    // ==================================================
+    // SUCCESS
+    // ==================================================
 
     return res.status(200).json({
       success: true,
