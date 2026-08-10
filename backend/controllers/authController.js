@@ -90,13 +90,15 @@ const forgotPassword = async (req, res) => {
 
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
-
+      port: 587,
+      secure: false,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
-      }
+      },
+      connectionTimeout: 15000,
+      greetingTimeout: 15000,
+      socketTimeout: 20000
     });
 
     // ==================================================
@@ -113,9 +115,7 @@ const forgotPassword = async (req, res) => {
 
     const mailOptions = {
       from: `"MERN Internship" <${process.env.EMAIL_USER}>`,
-
       to: user.email,
-
       subject: "Password Reset Request",
 
       html: `
@@ -204,7 +204,6 @@ const forgotPassword = async (req, res) => {
 
   } catch (error) {
 
-    // IMPORTANT: Show actual error in Render logs
     console.error(
       "FORGOT PASSWORD ERROR:",
       error
