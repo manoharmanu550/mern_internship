@@ -7,32 +7,54 @@ function Bookmarks() {
   const [bookmarks, setBookmarks] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchBookmarks();
-  }, []);
-
   const fetchBookmarks = async () => {
     try {
-      const res = await API.get("/bookmarks", {
+      setLoading(true);
+
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setBookmarks([]);
+        return;
+      }
+
+      const response = await API.get("/bookmarks", {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
-      if (Array.isArray(res.data)) {
-        setBookmarks(res.data);
-      } else if (Array.isArray(res.data.bookmarks)) {
-        setBookmarks(res.data.bookmarks);
+      console.log("Bookmarks API Response:", response.data);
+
+      if (Array.isArray(response.data)) {
+        setBookmarks(response.data);
+      } else if (Array.isArray(response.data.bookmarks)) {
+        setBookmarks(response.data.bookmarks);
       } else {
         setBookmarks([]);
       }
     } catch (err) {
-      console.log(err);
-      alert("Failed to load bookmarks");
+      console.error("Fetch Bookmarks Error:", err);
+      console.error("Response:", err.response);
+
+      if (err.response?.status === 401) {
+        alert("Session expired. Please login again.");
+      } else {
+        alert(
+          err.response?.data?.message ||
+            "Failed to load bookmarks"
+        );
+      }
+
+      setBookmarks([]);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchBookmarks();
+  }, []);
 
   if (loading) {
     return (

@@ -1,4 +1,3 @@
-
 const express = require("express");
 const router = express.Router();
 
@@ -10,13 +9,28 @@ const {
 
 const { protect } = require("../middleware/authMiddleware");
 
-// Save Bookmark
+// ========================================
+// SAVE BOOKMARK
+// POST /api/bookmarks
+// ========================================
 router.post("/", protect, saveBookmark);
 
-// Remove Bookmark
-router.delete("/:postId", protect, removeBookmark);
+// ========================================
+// REMOVE BOOKMARK BY BOOKMARK ID
+// DELETE /api/bookmarks/id/:bookmarkId
+// ========================================
+router.delete("/id/:bookmarkId", protect, removeBookmark);
 
-// Get My Bookmarks
+// ========================================
+// REMOVE BOOKMARK BY POST ID
+// DELETE /api/bookmarks/post/:postId
+// ========================================
+router.delete("/post/:postId", protect, removeBookmark);
+
+// ========================================
+// GET MY BOOKMARKS
+// GET /api/bookmarks
+// ========================================
 router.get("/", protect, getBookmarks);
 
 module.exports = router;
