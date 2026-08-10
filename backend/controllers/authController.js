@@ -1,7 +1,159 @@
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+
 const User = require("../models/User");
+
+// ======================================================
+// REGISTER
+// ======================================================
+
+const register = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Name, email and password are required"
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must contain at least 6 characters"
+      });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+
+    const existingUser = await User.findOne({
+      email: cleanEmail
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "Email already registered"
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      name: name.trim(),
+      email: cleanEmail,
+      password: hashedPassword
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Registration successful",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email
+      }
+    });
+
+  } catch (error) {
+    console.error("REGISTER ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Registration failed"
+    });
+  }
+};
+
+
+// ======================================================
+// LOGIN
+// ======================================================
+
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and password are required"
+      });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+
+    const user = await User.findOne({
+      email: cleanEmail
+    });
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password"
+      });
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(
+      password,
+      user.password
+    );
+
+    if (!isPasswordCorrect) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password"
+      });
+    }
+
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET is missing");
+
+      return res.status(500).json({
+        success: false,
+        message: "JWT_SECRET is not configured"
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        id: user._id,
+        email: user.email
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "7d"
+      }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Login successful",
+
+      token,
+
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        bio: user.bio,
+        avatarUrl: user.avatarUrl
+      }
+    });
+
+  } catch (error) {
+    console.error("LOGIN ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Login failed"
+    });
+  }
+};
+
 
 // ======================================================
 // FORGOT PASSWORD
@@ -18,11 +170,12 @@ const forgotPassword = async (req, res) => {
       });
     }
 
+    const cleanEmail = email.toLowerCase().trim();
+
     const user = await User.findOne({
-      email: email.toLowerCase().trim()
+      email: cleanEmail
     });
 
-    // Don't reveal whether email exists
     if (!user) {
       return res.status(200).json({
         success: true,
@@ -31,8 +184,10 @@ const forgotPassword = async (req, res) => {
       });
     }
 
-    // Generate random token
-    const resetToken = crypto.randomBytes(32).toString("hex");
+    // Generate reset token
+    const resetToken = crypto
+      .randomBytes(32)
+      .toString("hex");
 
     // Hash token before saving
     user.resetPasswordToken = crypto
@@ -40,7 +195,7 @@ const forgotPassword = async (req, res) => {
       .update(resetToken)
       .digest("hex");
 
-    // Token expires after 15 minutes
+    // Expire after 15 minutes
     user.resetPasswordExpire = new Date(
       Date.now() + 15 * 60 * 1000
     );
@@ -58,10 +213,13 @@ const forgotPassword = async (req, res) => {
     }
 
     const resetURL =
-      `${frontendURL}/reset-password/${resetToken}`;
+      `${frontendURL.replace(/\/$/, "")}/reset-password/${resetToken}`;
 
-    // Check email configuration
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    // Email configuration
+    if (
+      !process.env.EMAIL_USER ||
+      !process.env.EMAIL_PASS
+    ) {
       return res.status(500).json({
         success: false,
         message: "Email configuration is missing"
@@ -71,16 +229,22 @@ const forgotPassword = async (req, res) => {
     // Gmail transporter
     const transporter = nodemailer.createTransport({
       service: "gmail",
+
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
-      }
+      },
+
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000
     });
 
-    // Email
     const mailOptions = {
       from: `"MERN Internship" <${process.env.EMAIL_USER}>`,
+
       to: user.email,
+
       subject: "Password Reset Request",
 
       html: `
@@ -164,7 +328,6 @@ const forgotPassword = async (req, res) => {
     });
 
   } catch (error) {
-
     console.error(
       "FORGOT PASSWORD ERROR:",
       error
@@ -173,7 +336,7 @@ const forgotPassword = async (req, res) => {
     return res.status(500).json({
       success: false,
       message:
-        "Something went wrong. Please try again."
+        "Unable to send password reset email"
     });
   }
 };
@@ -185,7 +348,6 @@ const forgotPassword = async (req, res) => {
 
 const resetPassword = async (req, res) => {
   try {
-
     const { token } = req.params;
     const { password } = req.body;
 
@@ -211,15 +373,14 @@ const resetPassword = async (req, res) => {
       });
     }
 
-    // Hash token received from URL
     const hashedToken = crypto
       .createHash("sha256")
       .update(token)
       .digest("hex");
 
-    // Find user with valid token
     const user = await User.findOne({
       resetPasswordToken: hashedToken,
+
       resetPasswordExpire: {
         $gt: new Date()
       }
@@ -233,13 +394,13 @@ const resetPassword = async (req, res) => {
       });
     }
 
-    // Hash new password
-    user.password = await bcrypt.hash(
+    const hashedPassword = await bcrypt.hash(
       password,
       10
     );
 
-    // Remove reset token
+    user.password = hashedPassword;
+
     user.resetPasswordToken = null;
     user.resetPasswordExpire = null;
 
@@ -257,7 +418,6 @@ const resetPassword = async (req, res) => {
     });
 
   } catch (error) {
-
     console.error(
       "RESET PASSWORD ERROR:",
       error
@@ -277,6 +437,8 @@ const resetPassword = async (req, res) => {
 // ======================================================
 
 module.exports = {
+  register,
+  login,
   forgotPassword,
   resetPassword
-};
+}; 

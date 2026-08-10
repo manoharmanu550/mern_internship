@@ -32,10 +32,6 @@ const userSchema = new mongoose.Schema(
       default: ""
     },
 
-    // ===============================
-    // FORGOT PASSWORD FIELDS
-    // ===============================
-
     resetPasswordToken: {
       type: String,
       default: null
