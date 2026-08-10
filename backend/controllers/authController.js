@@ -1,17 +1,164 @@
 const crypto = require("crypto");
-const nodemailer = require("nodemailer");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 // ======================================================
+// REGISTER
+// ======================================================
+
+const register = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Name, email and password are required"
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must contain at least 6 characters"
+      });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+
+    const existingUser = await User.findOne({
+      email: cleanEmail
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "Email already registered"
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      name: name.trim(),
+      email: cleanEmail,
+      password: hashedPassword
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Registration successful",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email
+      }
+    });
+
+  } catch (error) {
+    console.error("REGISTER ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Registration failed"
+    });
+  }
+};
+
+
+// ======================================================
+// LOGIN
+// ======================================================
+
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and password are required"
+      });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+
+    const user = await User.findOne({
+      email: cleanEmail
+    });
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password"
+      });
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(
+      password,
+      user.password
+    );
+
+    if (!isPasswordCorrect) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password"
+      });
+    }
+
+    if (!process.env.JWT_SECRET) {
+      return res.status(500).json({
+        success: false,
+        message: "JWT_SECRET is not configured"
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        id: user._id,
+        email: user.email
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "7d"
+      }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Login successful",
+      token,
+
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        bio: user.bio,
+        avatarUrl: user.avatarUrl
+      }
+    });
+
+  } catch (error) {
+    console.error("LOGIN ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Login failed"
+    });
+  }
+};
+
+
+// ======================================================
 // FORGOT PASSWORD
+// Uses Resend HTTPS API
 // ======================================================
 
 const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
 
-    // Validate email
     if (!email) {
       return res.status(400).json({
         success: false,
@@ -19,9 +166,10 @@ const forgotPassword = async (req, res) => {
       });
     }
 
-    // Find user
+    const cleanEmail = email.toLowerCase().trim();
+
     const user = await User.findOne({
-      email: email.toLowerCase().trim()
+      email: cleanEmail
     });
 
     // Don't reveal whether email exists
@@ -30,6 +178,22 @@ const forgotPassword = async (req, res) => {
         success: true,
         message:
           "If this email is registered, a password reset link has been sent."
+      });
+    }
+
+    // Check Resend API key
+    if (!process.env.RESEND_API_KEY) {
+      return res.status(500).json({
+        success: false,
+        message: "RESEND_API_KEY is not configured"
+      });
+    }
+
+    // Check frontend URL
+    if (!process.env.FRONTEND_URL) {
+      return res.status(500).json({
+        success: false,
+        message: "FRONTEND_URL is not configured"
       });
     }
 
@@ -47,7 +211,7 @@ const forgotPassword = async (req, res) => {
       .update(resetToken)
       .digest("hex");
 
-    // Token expires in 15 minutes
+    // Token expires after 15 minutes
     user.resetPasswordExpire = new Date(
       Date.now() + 15 * 60 * 1000
     );
@@ -55,145 +219,150 @@ const forgotPassword = async (req, res) => {
     await user.save();
 
     // ==================================================
-    // FRONTEND URL
+    // RESET URL
     // ==================================================
 
-    const frontendURL = process.env.FRONTEND_URL;
-
-    if (!frontendURL) {
-      return res.status(500).json({
-        success: false,
-        message: "FRONTEND_URL is not configured"
-      });
-    }
+    const frontendURL =
+      process.env.FRONTEND_URL.replace(/\/$/, "");
 
     const resetURL =
       `${frontendURL}/reset-password/${resetToken}`;
 
     // ==================================================
-    // EMAIL CONFIGURATION CHECK
+    // SEND EMAIL USING RESEND
     // ==================================================
 
-    if (
-      !process.env.EMAIL_USER ||
-      !process.env.EMAIL_PASS
-    ) {
-      return res.status(500).json({
-        success: false,
-        message: "Email configuration is missing"
-      });
-    }
+    const emailResponse = await fetch(
+      "https://api.resend.com/emails",
+      {
+        method: "POST",
 
-    // ==================================================
-    // GMAIL SMTP TRANSPORTER
-    // ==================================================
+        headers: {
+          Authorization:
+            `Bearer ${process.env.RESEND_API_KEY}`,
 
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      },
-      connectionTimeout: 15000,
-      greetingTimeout: 15000,
-      socketTimeout: 20000
-    });
+          "Content-Type": "application/json"
+        },
 
-    // ==================================================
-    // VERIFY EMAIL CONNECTION
-    // ==================================================
+        body: JSON.stringify({
+          from:
+            "MERN Internship <onboarding@resend.dev>",
 
-    await transporter.verify();
+          to: [user.email],
 
-    console.log("Email server is ready");
+          subject:
+            "Password Reset Request",
 
-    // ==================================================
-    // EMAIL
-    // ==================================================
-
-    const mailOptions = {
-      from: `"MERN Internship" <${process.env.EMAIL_USER}>`,
-      to: user.email,
-      subject: "Password Reset Request",
-
-      html: `
-        <div
-          style="
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: auto;
-            padding: 30px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-          "
-        >
-
-          <h2 style="color:#2563eb;">
-            Password Reset
-          </h2>
-
-          <p>
-            Hello ${user.name || "User"},
-          </p>
-
-          <p>
-            We received a request to reset your password.
-          </p>
-
-          <p>
-            Click the button below to create a new password.
-          </p>
-
-          <div style="margin:25px 0;">
-
-            <a
-              href="${resetURL}"
+          html: `
+            <div
               style="
-                display:inline-block;
-                padding:12px 22px;
-                background:#2563eb;
-                color:#ffffff;
-                text-decoration:none;
-                border-radius:6px;
-                font-weight:bold;
+                font-family: Arial, sans-serif;
+                max-width: 600px;
+                margin: auto;
+                padding: 30px;
+                border: 1px solid #ddd;
+                border-radius: 10px;
               "
             >
-              Reset Password
-            </a>
 
-          </div>
+              <h2 style="color:#2563eb;">
+                Password Reset
+              </h2>
 
-          <p>
-            This password reset link will expire in
-            <strong>15 minutes</strong>.
-          </p>
+              <p>
+                Hello ${user.name || "User"},
+              </p>
 
-          <p>
-            If you did not request this password reset,
-            you can safely ignore this email.
-          </p>
+              <p>
+                We received a request to reset your password.
+              </p>
 
-          <hr />
+              <p>
+                Click the button below to create a new password.
+              </p>
 
-          <p style="font-size:12px;color:#777;">
-            MERN Internship
-          </p>
+              <div style="margin:25px 0;">
 
-        </div>
-      `
-    };
+                <a
+                  href="${resetURL}"
+                  style="
+                    display:inline-block;
+                    padding:12px 22px;
+                    background:#2563eb;
+                    color:#ffffff;
+                    text-decoration:none;
+                    border-radius:6px;
+                    font-weight:bold;
+                  "
+                >
+                  Reset Password
+                </a>
+
+              </div>
+
+              <p>
+                This password reset link will expire in
+                <strong>15 minutes</strong>.
+              </p>
+
+              <p>
+                If you did not request this password reset,
+                you can safely ignore this email.
+              </p>
+
+              <hr />
+
+              <p
+                style="
+                  font-size:12px;
+                  color:#777;
+                "
+              >
+                MERN Internship
+              </p>
+
+            </div>
+          `
+        })
+      }
+    );
+
+    const emailResult =
+      await emailResponse.json();
 
     // ==================================================
-    // SEND EMAIL
+    // RESEND ERROR
     // ==================================================
 
-    await transporter.sendMail(mailOptions);
+    if (!emailResponse.ok) {
+
+      // Remove token if email failed
+      user.resetPasswordToken = null;
+      user.resetPasswordExpire = null;
+
+      await user.save();
+
+      console.error(
+        "RESEND ERROR:",
+        emailResult
+      );
+
+      return res.status(500).json({
+        success: false,
+        message:
+          emailResult?.message ||
+          "Unable to send password reset email"
+      });
+    }
 
     console.log(
       "Password reset email sent to:",
       user.email
+    );
+
+    console.log(
+      "Resend Email ID:",
+      emailResult.id
     );
 
     return res.status(200).json({
@@ -251,13 +420,13 @@ const resetPassword = async (req, res) => {
       });
     }
 
-    // Hash token
+    // Hash reset token
     const hashedToken = crypto
       .createHash("sha256")
       .update(token)
       .digest("hex");
 
-    // Find user
+    // Find user with valid token
     const user = await User.findOne({
       resetPasswordToken: hashedToken,
 
@@ -319,6 +488,8 @@ const resetPassword = async (req, res) => {
 // ======================================================
 
 module.exports = {
+  register,
+  login,
   forgotPassword,
   resetPassword
 };
