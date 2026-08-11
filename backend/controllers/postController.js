@@ -14,28 +14,52 @@ const createPost = async (req, res) => {
       tags,
     } = req.body;
 
-    const slug = title
+    // Validate required fields
+    if (!title || !content || !excerpt) {
+      return res.status(400).json({
+        success: false,
+        message: "Title, content and excerpt are required",
+      });
+    }
+
+    // Generate base slug
+    const baseSlug = title
       .toLowerCase()
       .trim()
-      .replace(/\s+/g, "-");
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-");
 
+    // Make slug unique
+    let slug = baseSlug;
+
+    const existingPost = await Post.findOne({ slug });
+
+    if (existingPost) {
+      slug = `${baseSlug}-${Date.now()}`;
+    }
+
+    // Create post
     const post = await Post.create({
-      title,
+      title: title.trim(),
       slug,
-      content,
-      excerpt,
-      coverImage,
-      status,
-      tags,
+      content: content.trim(),
+      excerpt: excerpt.trim(),
+      coverImage: coverImage || "",
+      status: status || "published",
+      tags: tags || [],
       author: req.user._id,
     });
 
+    // Success response
     res.status(201).json({
       success: true,
       message: "Post Created Successfully",
       post,
     });
   } catch (error) {
+    console.error("Create Post Error:", error);
+
     res.status(500).json({
       success: false,
       message: error.message,
@@ -58,6 +82,8 @@ const getPosts = async (req, res) => {
       posts,
     });
   } catch (error) {
+    console.error("Get Posts Error:", error);
+
     res.status(500).json({
       success: false,
       message: error.message,
@@ -82,6 +108,8 @@ const getMyPosts = async (req, res) => {
       posts,
     });
   } catch (error) {
+    console.error("Get My Posts Error:", error);
+
     res.status(500).json({
       success: false,
       message: error.message,
@@ -121,7 +149,7 @@ const searchPosts = async (req, res) => {
       posts,
     });
   } catch (error) {
-    console.log(error);
+    console.error("Search Posts Error:", error);
 
     res.status(500).json({
       success: false,
@@ -151,6 +179,8 @@ const getPostById = async (req, res) => {
       post,
     });
   } catch (error) {
+    console.error("Get Single Post Error:", error);
+
     res.status(500).json({
       success: false,
       message: error.message,
@@ -189,6 +219,8 @@ const updatePost = async (req, res) => {
       post,
     });
   } catch (error) {
+    console.error("Update Post Error:", error);
+
     res.status(500).json({
       success: false,
       message: error.message,
@@ -224,6 +256,8 @@ const deletePost = async (req, res) => {
       message: "Post Deleted Successfully",
     });
   } catch (error) {
+    console.error("Delete Post Error:", error);
+
     res.status(500).json({
       success: false,
       message: error.message,
@@ -231,6 +265,9 @@ const deletePost = async (req, res) => {
   }
 };
 
+// =======================
+// Export Controllers
+// =======================
 module.exports = {
   createPost,
   getPosts,

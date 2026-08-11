@@ -15,10 +15,15 @@ function CreatePost() {
   const [preview, setPreview] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // =========================
+  // Handle Cover Image
+  // =========================
   const handleImage = (e) => {
     const file = e.target.files[0];
 
-    if (!file) return;
+    if (!file) {
+      return;
+    }
 
     const reader = new FileReader();
 
@@ -30,38 +35,84 @@ function CreatePost() {
     reader.readAsDataURL(file);
   };
 
+  // =========================
+  // Submit Post
+  // =========================
   const submitHandler = async (e) => {
     e.preventDefault();
 
-    if (!title || !content || !excerpt) {
-      return alert("Please fill all required fields");
+    // Validate fields
+    if (
+      !title.trim() ||
+      !content.trim() ||
+      !excerpt.trim()
+    ) {
+      alert("Please fill all required fields");
+      return;
+    }
+
+    // Check login token
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Please login first");
+      navigate("/login");
+      return;
     }
 
     try {
       setLoading(true);
 
-      await API.post(
+      console.log("Creating post...");
+
+      // Send post to backend
+      const response = await API.post(
         "/posts",
         {
-          title,
-          content,
-          excerpt,
+          title: title.trim(),
+          content: content.trim(),
+          excerpt: excerpt.trim(),
           coverImage,
           status,
           tags: [],
         },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
-      alert("🎉 Post Published Successfully");
+      console.log(
+        "Create Post Response:",
+        response.data
+      );
+
+      // Success
+      alert("🎉 Post Published Successfully!");
+
+      // Go to Home page
       navigate("/");
     } catch (err) {
-      console.log(err);
-      alert(err.response?.data?.message || "Failed to create post");
+      console.error(
+        "Create Post Error:",
+        err
+      );
+
+      console.error(
+        "Status:",
+        err.response?.status
+      );
+
+      console.error(
+        "Response:",
+        err.response?.data
+      );
+
+      alert(
+        err.response?.data?.message ||
+          "Failed to create post"
+      );
     } finally {
       setLoading(false);
     }
@@ -69,77 +120,136 @@ function CreatePost() {
 
   return (
     <div className="create-wrapper">
+
       <div className="create-card">
 
+        {/* =========================
+            Header
+        ========================== */}
+
         <h1>Create New Blog</h1>
-        <p>Share your ideas with the world.</p>
+
+        <p>
+          Share your ideas with the world.
+        </p>
+
+        {/* =========================
+            Form
+        ========================== */}
 
         <form onSubmit={submitHandler}>
 
-          <label>Title</label>
+          {/* Title */}
+
+          <label htmlFor="title">
+            Title
+          </label>
 
           <input
+            id="title"
             type="text"
             placeholder="Enter Blog Title"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) =>
+              setTitle(e.target.value)
+            }
           />
 
-          <label>Content</label>
+          {/* Content */}
+
+          <label htmlFor="content">
+            Content
+          </label>
 
           <textarea
+            id="content"
             rows="8"
             placeholder="Write your blog content..."
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={(e) =>
+              setContent(e.target.value)
+            }
           />
 
-          <label>Excerpt</label>
+          {/* Excerpt */}
+
+          <label htmlFor="excerpt">
+            Excerpt
+          </label>
 
           <input
+            id="excerpt"
             type="text"
             placeholder="Short Description"
             value={excerpt}
-            onChange={(e) => setExcerpt(e.target.value)}
+            onChange={(e) =>
+              setExcerpt(e.target.value)
+            }
           />
 
-          <label>Cover Image</label>
+          {/* Cover Image */}
+
+          <label htmlFor="coverImage">
+            Cover Image
+          </label>
 
           <input
+            id="coverImage"
             type="file"
             accept="image/*"
             onChange={handleImage}
           />
 
+          {/* Image Preview */}
+
           {preview && (
-            <img
-              src={preview}
-              alt="Preview"
-              className="preview-image"
-            />
+            <div className="preview-container">
+              <img
+                src={preview}
+                alt="Cover Preview"
+                className="preview-image"
+              />
+            </div>
           )}
 
-          <label>Status</label>
+          {/* Status */}
+
+          <label htmlFor="status">
+            Status
+          </label>
 
           <select
+            id="status"
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
+            onChange={(e) =>
+              setStatus(e.target.value)
+            }
           >
-            <option value="published">Published</option>
-            <option value="draft">Draft</option>
+            <option value="published">
+              Published
+            </option>
+
+            <option value="draft">
+              Draft
+            </option>
           </select>
+
+          {/* Publish Button */}
 
           <button
             type="submit"
             disabled={loading}
             className="publish-btn"
           >
-            {loading ? "Publishing..." : "🚀 Publish Post"}
+            {loading
+              ? "Publishing..."
+              : "🚀 Publish Post"}
           </button>
 
         </form>
 
       </div>
+
     </div>
   );
 }

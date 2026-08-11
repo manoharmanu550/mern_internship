@@ -1,72 +1,194 @@
+const mongoose = require("mongoose");
+
 const Comment = require("../models/Comment");
+const Post = require("../models/Post");
 
-// ======================================================
-// CREATE COMMENT
-// ======================================================
 
-const createComment = async (req, res) => {
+// =========================================================
+// ADD COMMENT
+// POST /api/comments
+// =========================================================
+
+const addComment = async (req, res) => {
   try {
-    // Frontend nundi text and post vastayi
-    const { text, post } = req.body;
+    const {
+      postId,
+      post,
+      text,
+    } = req.body;
 
-    // Validate comment text
-    if (!text || !text.trim()) {
-      return res.status(400).json({
+    console.log("=================================");
+    console.log("          ADD COMMENT");
+    console.log("=================================");
+    console.log("Body:", req.body);
+    console.log("Post ID:", postId);
+    console.log("Post:", post);
+    console.log("Text:", text);
+    console.log("User:", req.user?._id);
+    console.log("=================================");
+
+
+    // -----------------------------------------------------
+    // CHECK LOGIN
+    // -----------------------------------------------------
+
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({
         success: false,
-        message: "Comment text is required",
+        message: "Please login first",
       });
     }
 
-    // Validate post ID
-    if (!post) {
+
+    // -----------------------------------------------------
+    // SUPPORT BOTH postId AND post
+    // -----------------------------------------------------
+
+    const finalPostId = postId || post;
+
+
+    if (!finalPostId) {
       return res.status(400).json({
         success: false,
         message: "Post ID is required",
       });
     }
 
-    // Check logged-in user
-    if (!req.user || !req.user._id) {
-      return res.status(401).json({
+
+    // -----------------------------------------------------
+    // VALIDATE POST ID
+    // -----------------------------------------------------
+
+    if (
+      !mongoose.Types.ObjectId.isValid(
+        finalPostId
+      )
+    ) {
+      return res.status(400).json({
         success: false,
-        message: "Unauthorized. Please login first.",
+        message: "Invalid Post ID",
       });
     }
 
-    // Create comment
-    const comment = await Comment.create({
-      text: text.trim(),
-      post: post,
-      author: req.user._id,
-    });
 
-    // Populate author details
-    await comment.populate("author", "name email");
+    // -----------------------------------------------------
+    // VALIDATE COMMENT TEXT
+    // -----------------------------------------------------
+
+    if (
+      typeof text !== "string" ||
+      !text.trim()
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Comment text is required",
+      });
+    }
+
+
+    const cleanText = text.trim();
+
+
+    if (cleanText.length > 1000) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Comment cannot exceed 1000 characters",
+      });
+    }
+
+
+    // -----------------------------------------------------
+    // CHECK POST EXISTS
+    // -----------------------------------------------------
+
+    const postExists =
+      await Post.findById(finalPostId);
+
+    if (!postExists) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found",
+      });
+    }
+
+
+    // -----------------------------------------------------
+    // CREATE COMMENT
+    // -----------------------------------------------------
+
+    const comment =
+      await Comment.create({
+        post: finalPostId,
+        author: req.user._id,
+        text: cleanText,
+      });
+
+
+    // -----------------------------------------------------
+    // POPULATE AUTHOR
+    // -----------------------------------------------------
+
+    await comment.populate(
+      "author",
+      "name email"
+    );
+
+
+    // -----------------------------------------------------
+    // RESPONSE
+    // -----------------------------------------------------
 
     return res.status(201).json({
       success: true,
-      message: "Comment created successfully",
+      message: "Comment Added Successfully",
       comment,
     });
 
+
   } catch (error) {
-    console.error("CREATE COMMENT ERROR:", error);
+
+    console.error(
+      "========== ADD COMMENT ERROR =========="
+    );
+
+    console.error(error);
+
+    console.error(
+      "======================================="
+    );
+
 
     return res.status(500).json({
       success: false,
-      message: error.message || "Failed to create comment",
+      message:
+        error.message ||
+        "Failed to add comment",
     });
   }
 };
 
 
-// ======================================================
-// GET COMMENTS BY POST
-// ======================================================
+// =========================================================
+// GET COMMENTS
+// GET /api/comments/:postId
+// =========================================================
 
-const getCommentsByPost = async (req, res) => {
+const getComments = async (req, res) => {
   try {
+
     const { postId } = req.params;
+
+
+    console.log(
+      "========== GET COMMENTS =========="
+    );
+
+    console.log(
+      "Post ID:",
+      postId
+    );
+
 
     if (!postId) {
       return res.status(400).json({
@@ -75,45 +197,121 @@ const getCommentsByPost = async (req, res) => {
       });
     }
 
-    const comments = await Comment.find({
-      post: postId,
-    })
-      .populate("author", "name email")
-      .sort({ createdAt: -1 });
+
+    if (
+      !mongoose.Types.ObjectId.isValid(
+        postId
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Post ID",
+      });
+    }
+
+
+    // -----------------------------------------------------
+    // CHECK POST
+    // -----------------------------------------------------
+
+    const post =
+      await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found",
+      });
+    }
+
+
+    // -----------------------------------------------------
+    // GET COMMENTS
+    // -----------------------------------------------------
+
+    const comments =
+      await Comment.find({
+        post: postId,
+      })
+        .populate(
+          "author",
+          "name email"
+        )
+        .sort({
+          createdAt: -1,
+        });
+
 
     return res.status(200).json({
       success: true,
       message: "Comments fetched successfully",
+      count: comments.length,
       comments,
     });
 
+
   } catch (error) {
-    console.error("GET COMMENTS ERROR:", error);
+
+    console.error(
+      "Get Comments Error:",
+      error
+    );
+
 
     return res.status(500).json({
       success: false,
-      message: error.message || "Failed to fetch comments",
+      message:
+        error.message ||
+        "Failed to load comments",
     });
   }
 };
 
 
-// ======================================================
+// =========================================================
 // DELETE COMMENT
-// ======================================================
+// DELETE /api/comments/:commentId
+// =========================================================
 
 const deleteComment = async (req, res) => {
   try {
-    const { id } = req.params;
 
-    if (!id) {
+    const { commentId } = req.params;
+
+
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({
+        success: false,
+        message: "Please login first",
+      });
+    }
+
+
+    if (!commentId) {
       return res.status(400).json({
         success: false,
         message: "Comment ID is required",
       });
     }
 
-    const comment = await Comment.findById(id);
+
+    if (
+      !mongoose.Types.ObjectId.isValid(
+        commentId
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Comment ID",
+      });
+    }
+
+
+    const comment =
+      await Comment.findById(
+        commentId
+      );
+
 
     if (!comment) {
       return res.status(404).json({
@@ -122,41 +320,57 @@ const deleteComment = async (req, res) => {
       });
     }
 
-    // Only comment owner can delete
+
+    // -----------------------------------------------------
+    // OWNER CHECK
+    // -----------------------------------------------------
+
     if (
-      !req.user ||
-      comment.author.toString() !== req.user._id.toString()
+      comment.author.toString() !==
+      req.user._id.toString()
     ) {
       return res.status(403).json({
         success: false,
-        message: "You are not allowed to delete this comment",
+        message:
+          "You are not authorized to delete this comment",
       });
     }
 
-    await Comment.findByIdAndDelete(id);
+
+    await comment.deleteOne();
+
 
     return res.status(200).json({
       success: true,
-      message: "Comment deleted successfully",
+      message:
+        "Comment Deleted Successfully",
     });
 
+
   } catch (error) {
-    console.error("DELETE COMMENT ERROR:", error);
+
+    console.error(
+      "Delete Comment Error:",
+      error
+    );
+
 
     return res.status(500).json({
       success: false,
-      message: error.message || "Failed to delete comment",
+      message:
+        error.message ||
+        "Failed to delete comment",
     });
   }
 };
 
 
-// ======================================================
+// =========================================================
 // EXPORT
-// ======================================================
+// =========================================================
 
 module.exports = {
-  createComment,
-  getCommentsByPost,
+  addComment,
+  getComments,
   deleteComment,
 };

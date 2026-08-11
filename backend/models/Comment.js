@@ -1,51 +1,56 @@
 const mongoose = require("mongoose");
 
+
+// =========================================================
+// COMMENT SCHEMA
+// =========================================================
+
 const commentSchema = new mongoose.Schema(
   {
-    // ==================================================
-    // COMMENT TEXT
-    // ==================================================
-
-    text: {
-      type: String,
-      required: [true, "Comment text is required"],
-      trim: true,
-      minlength: [1, "Comment cannot be empty"],
-      maxlength: [1000, "Comment cannot exceed 1000 characters"],
+    post: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Post",
+      required: true,
+      index: true,
     },
-
-    // ==================================================
-    // COMMENT AUTHOR
-    // ==================================================
 
     author: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: [true, "Comment author is required"],
+      required: true,
+      index: true,
     },
 
-    // ==================================================
-    // POST
-    // ==================================================
-
-    post: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Post",
-      required: [true, "Post is required"],
+    text: {
+      type: String,
+      required: true,
+      trim: true,
+      minlength: 1,
+      maxlength: 1000,
     },
   },
-
   {
     timestamps: true,
   }
 );
 
 
-// ======================================================
-// EXPORT MODEL
-// ======================================================
+// =========================================================
+// INDEX
+// =========================================================
 
-module.exports = mongoose.model(
-  "Comment",
-  commentSchema
-);
+commentSchema.index({
+  post: 1,
+  createdAt: -1,
+});
+
+
+// =========================================================
+// MODEL
+// =========================================================
+
+module.exports =
+  mongoose.model(
+    "Comment",
+    commentSchema
+  );
