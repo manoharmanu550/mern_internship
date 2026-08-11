@@ -11,6 +11,7 @@ const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
+    // Validate fields
     if (!name || !email || !password) {
       return res.status(400).json({
         success: false,
@@ -18,6 +19,7 @@ const register = async (req, res) => {
       });
     }
 
+    // Password validation
     if (password.length < 6) {
       return res.status(400).json({
         success: false,
@@ -25,8 +27,10 @@ const register = async (req, res) => {
       });
     }
 
+    // Clean email
     const cleanEmail = email.toLowerCase().trim();
 
+    // Check existing user
     const existingUser = await User.findOne({
       email: cleanEmail
     });
@@ -38,26 +42,57 @@ const register = async (req, res) => {
       });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // ==================================================
+    // HASH PASSWORD
+    // ==================================================
+
+    const hashedPassword = await bcrypt.hash(
+      password,
+      10
+    );
+
+    // ==================================================
+    // GENERATE 6-DIGIT RECOVERY PIN
+    // ==================================================
+
+    const recoveryPin =
+      crypto.randomInt(100000, 1000000).toString();
+
+    // ==================================================
+    // CREATE USER
+    // ==================================================
 
     const user = await User.create({
       name: name.trim(),
       email: cleanEmail,
-      password: hashedPassword
+      password: hashedPassword,
+      recoveryPin: recoveryPin
     });
+
+    // ==================================================
+    // REGISTRATION RESPONSE
+    // ==================================================
 
     return res.status(201).json({
       success: true,
       message: "Registration successful",
+
       user: {
         id: user._id,
         name: user.name,
         email: user.email
-      }
+      },
+
+      // IMPORTANT:
+      // User should save this PIN for password recovery.
+      recoveryPin: recoveryPin
     });
 
   } catch (error) {
-    console.error("REGISTER ERROR:", error);
+    console.error(
+      "REGISTER ERROR:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
@@ -75,15 +110,20 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Validate
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: "Email and password are required"
+        message:
+          "Email and password are required"
       });
     }
 
-    const cleanEmail = email.toLowerCase().trim();
+    // Clean email
+    const cleanEmail =
+      email.toLowerCase().trim();
 
+    // Find user
     const user = await User.findOne({
       email: cleanEmail
     });
@@ -91,43 +131,54 @@ const login = async (req, res) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: "Invalid email or password"
+        message:
+          "Invalid email or password"
       });
     }
 
-    const isPasswordCorrect = await bcrypt.compare(
-      password,
-      user.password
-    );
+    // Compare password
+    const isPasswordCorrect =
+      await bcrypt.compare(
+        password,
+        user.password
+      );
 
     if (!isPasswordCorrect) {
       return res.status(401).json({
         success: false,
-        message: "Invalid email or password"
+        message:
+          "Invalid email or password"
       });
     }
 
+    // Check JWT secret
     if (!process.env.JWT_SECRET) {
       return res.status(500).json({
         success: false,
-        message: "JWT_SECRET is not configured"
+        message:
+          "JWT_SECRET is not configured"
       });
     }
 
+    // Create JWT
     const token = jwt.sign(
       {
         id: user._id,
         email: user.email
       },
+
       process.env.JWT_SECRET,
+
       {
         expiresIn: "7d"
       }
     );
 
+    // Response
     return res.status(200).json({
       success: true,
       message: "Login successful",
+
       token,
 
       user: {
@@ -140,7 +191,10 @@ const login = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("LOGIN ERROR:", error);
+    console.error(
+      "LOGIN ERROR:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
@@ -152,275 +206,161 @@ const login = async (req, res) => {
 
 // ======================================================
 // FORGOT PASSWORD
-// Uses Resend HTTPS API
+// Email + Recovery PIN
+// NO EMAIL SERVICE REQUIRED
 // ======================================================
 
 const forgotPassword = async (req, res) => {
   try {
-    const { email } = req.body;
+
+    const {
+      email,
+      recoveryPin
+    } = req.body;
+
+    // ==================================================
+    // VALIDATE EMAIL
+    // ==================================================
 
     if (!email) {
       return res.status(400).json({
         success: false,
-        message: "Please enter your email"
+        message:
+          "Please enter your email"
       });
     }
 
-    const cleanEmail = email.toLowerCase().trim();
+    // ==================================================
+    // VALIDATE RECOVERY PIN
+    // ==================================================
+
+    if (!recoveryPin) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Please enter your recovery PIN"
+      });
+    }
+
+    // ==================================================
+    // CLEAN EMAIL
+    // ==================================================
+
+    const cleanEmail =
+      email.toLowerCase().trim();
+
+    // ==================================================
+    // FIND USER
+    // ==================================================
 
     const user = await User.findOne({
       email: cleanEmail
     });
 
-    // Don't reveal whether email exists
     if (!user) {
-      return res.status(200).json({
-        success: true,
+      return res.status(404).json({
+        success: false,
         message:
-          "If this email is registered, a password reset link has been sent."
+          "No account found with this email"
       });
     }
 
     // ==================================================
-    // CHECK RESEND API KEY
+    // CHECK RECOVERY PIN
     // ==================================================
 
-    if (!process.env.RESEND_API_KEY) {
-      return res.status(500).json({
+    if (
+      !user.recoveryPin ||
+      user.recoveryPin !==
+        recoveryPin.toString().trim()
+    ) {
+      return res.status(401).json({
         success: false,
-        message: "RESEND_API_KEY is not configured"
+        message:
+          "Invalid email or recovery PIN"
       });
     }
-
-    // ==================================================
-    // CHECK FRONTEND URL
-    // ==================================================
-
-    if (!process.env.FRONTEND_URL) {
-      return res.status(500).json({
-        success: false,
-        message: "FRONTEND_URL is not configured"
-      });
-    }
-
 
     // ==================================================
     // GENERATE RESET TOKEN
     // ==================================================
 
-    const resetToken = crypto
-      .randomBytes(32)
-      .toString("hex");
+    const resetToken =
+      crypto.randomBytes(32).toString("hex");
 
-    // Hash token before storing
-    user.resetPasswordToken = crypto
-      .createHash("sha256")
-      .update(resetToken)
-      .digest("hex");
+    // ==================================================
+    // HASH TOKEN
+    // ==================================================
 
-    // Token expires after 15 minutes
-    user.resetPasswordExpire = new Date(
-      Date.now() + 15 * 60 * 1000
-    );
+    user.resetPasswordToken =
+      crypto
+        .createHash("sha256")
+        .update(resetToken)
+        .digest("hex");
+
+    // ==================================================
+    // TOKEN EXPIRY
+    // 15 MINUTES
+    // ==================================================
+
+    user.resetPasswordExpire =
+      new Date(
+        Date.now() +
+        15 * 60 * 1000
+      );
 
     await user.save();
 
-
     // ==================================================
-    // RESET URL
-    // ==================================================
-
-    const frontendURL =
-      process.env.FRONTEND_URL.replace(/\/$/, "");
-
-    const resetURL =
-      `${frontendURL}/reset-password/${resetToken}`;
-
-
-    // ==================================================
-    // EMAIL HTML
+    // CREATE RESET URL
     // ==================================================
 
-    const emailHTML = `
-      <div
-        style="
-          font-family: Arial, sans-serif;
-          max-width: 600px;
-          margin: auto;
-          padding: 30px;
-          border: 1px solid #ddd;
-          border-radius: 10px;
-        "
-      >
+    let resetURL;
 
-        <h2 style="color:#2563eb;">
-          Password Reset
-        </h2>
+    if (process.env.FRONTEND_URL) {
 
-        <p>
-          Hello ${user.name || "User"},
-        </p>
+      const frontendURL =
+        process.env.FRONTEND_URL
+          .replace(/\/$/, "");
 
-        <p>
-          We received a request to reset your password.
-        </p>
+      resetURL =
+        `${frontendURL}/reset-password/${resetToken}`;
 
-        <p>
-          Click the button below to create a new password.
-        </p>
+    } else {
 
-        <div style="margin:25px 0;">
-
-          <a
-            href="${resetURL}"
-            style="
-              display:inline-block;
-              padding:12px 22px;
-              background:#2563eb;
-              color:#ffffff;
-              text-decoration:none;
-              border-radius:6px;
-              font-weight:bold;
-            "
-          >
-            Reset Password
-          </a>
-
-        </div>
-
-        <p>
-          This password reset link will expire in
-          <strong>15 minutes</strong>.
-        </p>
-
-        <p>
-          If you did not request this password reset,
-          you can safely ignore this email.
-        </p>
-
-        <hr />
-
-        <p
-          style="
-            font-size:12px;
-            color:#777;
-          "
-        >
-          MERN Internship
-        </p>
-
-      </div>
-    `;
-
-
-    // ==================================================
-    // SEND EMAIL USING RESEND HTTPS API
-    // ==================================================
-
-    try {
-
-      const emailResponse = await fetch(
-        "https://api.resend.com/emails",
-        {
-          method: "POST",
-
-          headers: {
-            Authorization:
-              `Bearer ${process.env.RESEND_API_KEY}`,
-
-            "Content-Type": "application/json"
-          },
-
-          body: JSON.stringify({
-
-            // Resend testing sender
-            from:
-              "MERN Internship <onboarding@resend.dev>",
-
-            to: [user.email],
-
-            subject:
-              "Password Reset Request",
-
-            html: emailHTML
-          })
-        }
-      );
-
-
-      const emailResult =
-        await emailResponse.json();
-
-
-      // ==================================================
-      // RESEND ERROR
-      // ==================================================
-
-      if (!emailResponse.ok) {
-
-        // Remove token if email failed
-        user.resetPasswordToken = null;
-        user.resetPasswordExpire = null;
-
-        await user.save();
-
-        console.error(
-          "RESEND ERROR:",
-          emailResult
-        );
-
-        return res.status(500).json({
-          success: false,
-          message:
-            emailResult?.message ||
-            "Unable to send password reset email"
-        });
-      }
-
-
-      // ==================================================
-      // EMAIL SENT SUCCESSFULLY
-      // ==================================================
-
-      console.log(
-        "Password reset email sent to:",
-        user.email
-      );
-
-      console.log(
-        "Resend Email ID:",
-        emailResult.id
-      );
-
-    } catch (emailError) {
-
-      // Remove token if email failed
-      user.resetPasswordToken = null;
-      user.resetPasswordExpire = null;
-
-      await user.save();
-
-      console.error(
-        "RESEND HTTPS API ERROR:",
-        emailError
-      );
-
-      return res.status(500).json({
-        success: false,
-        message:
-          "Unable to send password reset email"
-      });
+      resetURL =
+        `/reset-password/${resetToken}`;
     }
 
+    // ==================================================
+    // LOG
+    // ==================================================
+
+    console.log(
+      "PASSWORD RESET REQUEST:"
+    );
+
+    console.log(
+      "User:",
+      user.email
+    );
+
+    console.log(
+      "Reset URL:",
+      resetURL
+    );
 
     // ==================================================
-    // SUCCESS RESPONSE
+    // SUCCESS
     // ==================================================
 
     return res.status(200).json({
       success: true,
+
       message:
-        "If this email is registered, a password reset link has been sent."
+        "Recovery PIN verified. Reset your password.",
+
+      resetURL: resetURL
     });
 
   } catch (error) {
@@ -433,8 +373,7 @@ const forgotPassword = async (req, res) => {
     return res.status(500).json({
       success: false,
       message:
-        error.message ||
-        "Unable to send password reset email"
+        "Unable to process password reset"
     });
   }
 };
@@ -447,20 +386,35 @@ const forgotPassword = async (req, res) => {
 const resetPassword = async (req, res) => {
   try {
 
-    const { token } = req.params;
-    const { password } = req.body;
+    const {
+      token
+    } = req.params;
+
+    const {
+      password
+    } = req.body;
+
+    // ==================================================
+    // TOKEN VALIDATION
+    // ==================================================
 
     if (!token) {
       return res.status(400).json({
         success: false,
-        message: "Reset token is missing"
+        message:
+          "Reset token is missing"
       });
     }
+
+    // ==================================================
+    // PASSWORD VALIDATION
+    // ==================================================
 
     if (!password) {
       return res.status(400).json({
         success: false,
-        message: "Please enter a new password"
+        message:
+          "Please enter a new password"
       });
     }
 
@@ -472,27 +426,29 @@ const resetPassword = async (req, res) => {
       });
     }
 
+    // ==================================================
+    // HASH TOKEN
+    // ==================================================
+
+    const hashedToken =
+      crypto
+        .createHash("sha256")
+        .update(token)
+        .digest("hex");
 
     // ==================================================
-    // HASH RESET TOKEN
-    // ==================================================
-
-    const hashedToken = crypto
-      .createHash("sha256")
-      .update(token)
-      .digest("hex");
-
-
-    // ==================================================
-    // FIND USER WITH VALID TOKEN
+    // FIND USER
     // ==================================================
 
     const user = await User.findOne({
-      resetPasswordToken: hashedToken,
+
+      resetPasswordToken:
+        hashedToken,
 
       resetPasswordExpire: {
         $gt: new Date()
       }
+
     });
 
     if (!user) {
@@ -503,32 +459,34 @@ const resetPassword = async (req, res) => {
       });
     }
 
-
     // ==================================================
     // HASH NEW PASSWORD
     // ==================================================
 
-    user.password = await bcrypt.hash(
-      password,
-      10
-    );
-
+    user.password =
+      await bcrypt.hash(
+        password,
+        10
+      );
 
     // ==================================================
     // REMOVE RESET TOKEN
     // ==================================================
 
     user.resetPasswordToken = null;
+
     user.resetPasswordExpire = null;
 
     await user.save();
 
+    // ==================================================
+    // LOG
+    // ==================================================
 
     console.log(
       "Password reset successful for:",
       user.email
     );
-
 
     // ==================================================
     // SUCCESS
@@ -550,7 +508,6 @@ const resetPassword = async (req, res) => {
     return res.status(500).json({
       success: false,
       message:
-        error.message ||
         "Something went wrong. Please try again."
     });
   }

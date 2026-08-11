@@ -2,11 +2,20 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
+    // ==================================================
+    // USER NAME
+    // ==================================================
+
     name: {
       type: String,
       required: true,
       trim: true
     },
+
+
+    // ==================================================
+    // EMAIL
+    // ==================================================
 
     email: {
       type: String,
@@ -16,10 +25,20 @@ const userSchema = new mongoose.Schema(
       trim: true
     },
 
+
+    // ==================================================
+    // PASSWORD
+    // ==================================================
+
     password: {
       type: String,
       required: true
     },
+
+
+    // ==================================================
+    // BIO
+    // ==================================================
 
     bio: {
       type: String,
@@ -27,10 +46,32 @@ const userSchema = new mongoose.Schema(
       default: ""
     },
 
+
+    // ==================================================
+    // AVATAR
+    // ==================================================
+
     avatarUrl: {
       type: String,
       default: ""
     },
+
+
+    // ==================================================
+    // RECOVERY PIN
+    // Used for simple password recovery
+    // ==================================================
+
+    recoveryPin: {
+      type: String,
+      default: null
+    },
+
+
+    // ==================================================
+    // OLD RESET TOKEN FIELDS
+    // Kept so existing functionality/data is not affected
+    // ==================================================
 
     resetPasswordToken: {
       type: String,
@@ -42,9 +83,23 @@ const userSchema = new mongoose.Schema(
       default: null
     }
   },
+
+
+  // ====================================================
+  // TIMESTAMPS
+  // ====================================================
+
   {
     timestamps: true
   }
 );
 
-module.exports = mongoose.model("User", userSchema);
+
+// ======================================================
+// EXPORT USER MODEL
+// ======================================================
+
+module.exports = mongoose.model(
+  "User",
+  userSchema
+);
