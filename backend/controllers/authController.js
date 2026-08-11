@@ -83,12 +83,12 @@ const register = async (req, res) => {
         email: user.email
       },
 
-      // IMPORTANT:
-      // User should save this PIN for password recovery.
+      // Recovery PIN shown only during registration
       recoveryPin: recoveryPin
     });
 
   } catch (error) {
+
     console.error(
       "REGISTER ERROR:",
       error
@@ -110,7 +110,10 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Validate
+    // ==================================================
+    // VALIDATE
+    // ==================================================
+
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -119,11 +122,17 @@ const login = async (req, res) => {
       });
     }
 
-    // Clean email
+    // ==================================================
+    // CLEAN EMAIL
+    // ==================================================
+
     const cleanEmail =
       email.toLowerCase().trim();
 
-    // Find user
+    // ==================================================
+    // FIND USER
+    // ==================================================
+
     const user = await User.findOne({
       email: cleanEmail
     });
@@ -136,7 +145,10 @@ const login = async (req, res) => {
       });
     }
 
-    // Compare password
+    // ==================================================
+    // CHECK PASSWORD
+    // ==================================================
+
     const isPasswordCorrect =
       await bcrypt.compare(
         password,
@@ -151,7 +163,10 @@ const login = async (req, res) => {
       });
     }
 
-    // Check JWT secret
+    // ==================================================
+    // CHECK JWT SECRET
+    // ==================================================
+
     if (!process.env.JWT_SECRET) {
       return res.status(500).json({
         success: false,
@@ -160,7 +175,10 @@ const login = async (req, res) => {
       });
     }
 
-    // Create JWT
+    // ==================================================
+    // CREATE JWT
+    // ==================================================
+
     const token = jwt.sign(
       {
         id: user._id,
@@ -174,7 +192,10 @@ const login = async (req, res) => {
       }
     );
 
-    // Response
+    // ==================================================
+    // LOGIN RESPONSE
+    // ==================================================
+
     return res.status(200).json({
       success: true,
       message: "Login successful",
@@ -191,6 +212,7 @@ const login = async (req, res) => {
     });
 
   } catch (error) {
+
     console.error(
       "LOGIN ERROR:",
       error
@@ -250,6 +272,25 @@ const forgotPassword = async (req, res) => {
       email.toLowerCase().trim();
 
     // ==================================================
+    // CLEAN RECOVERY PIN
+    // ==================================================
+
+    const cleanRecoveryPin =
+      recoveryPin.toString().trim();
+
+    // ==================================================
+    // VALIDATE PIN FORMAT
+    // ==================================================
+
+    if (!/^\d{6}$/.test(cleanRecoveryPin)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Recovery PIN must contain exactly 6 digits"
+      });
+    }
+
+    // ==================================================
     // FIND USER
     // ==================================================
 
@@ -271,8 +312,7 @@ const forgotPassword = async (req, res) => {
 
     if (
       !user.recoveryPin ||
-      user.recoveryPin !==
-        recoveryPin.toString().trim()
+      user.recoveryPin !== cleanRecoveryPin
     ) {
       return res.status(401).json({
         success: false,
@@ -289,14 +329,21 @@ const forgotPassword = async (req, res) => {
       crypto.randomBytes(32).toString("hex");
 
     // ==================================================
-    // HASH TOKEN
+    // HASH RESET TOKEN BEFORE SAVING
     // ==================================================
 
-    user.resetPasswordToken =
+    const hashedToken =
       crypto
         .createHash("sha256")
         .update(resetToken)
         .digest("hex");
+
+    // ==================================================
+    // SAVE RESET TOKEN
+    // ==================================================
+
+    user.resetPasswordToken =
+      hashedToken;
 
     // ==================================================
     // TOKEN EXPIRY
@@ -312,32 +359,26 @@ const forgotPassword = async (req, res) => {
     await user.save();
 
     // ==================================================
-    // CREATE RESET URL
+    // CREATE FRONTEND RESET URL
+    //
+    // IMPORTANT:
+    // Do NOT use BACKEND URL here.
+    // This must point to React frontend.
     // ==================================================
 
-    let resetURL;
-
-    if (process.env.FRONTEND_URL) {
-
-      const frontendURL =
-        process.env.FRONTEND_URL
-          .replace(/\/$/, "");
-
-      resetURL =
-        `${frontendURL}/reset-password/${resetToken}`;
-
-    } else {
-
-      resetURL =
-        `/reset-password/${resetToken}`;
-    }
+    const resetURL =
+      `/reset-password/${resetToken}`;
 
     // ==================================================
-    // LOG
+    // SERVER LOG
     // ==================================================
 
     console.log(
-      "PASSWORD RESET REQUEST:"
+      "========================================"
+    );
+
+    console.log(
+      "PASSWORD RESET REQUEST"
     );
 
     console.log(
@@ -350,8 +391,12 @@ const forgotPassword = async (req, res) => {
       resetURL
     );
 
+    console.log(
+      "========================================"
+    );
+
     // ==================================================
-    // SUCCESS
+    // SUCCESS RESPONSE
     // ==================================================
 
     return res.status(200).json({
@@ -437,7 +482,7 @@ const resetPassword = async (req, res) => {
         .digest("hex");
 
     // ==================================================
-    // FIND USER
+    // FIND USER WITH VALID TOKEN
     // ==================================================
 
     const user = await User.findOne({
@@ -450,6 +495,10 @@ const resetPassword = async (req, res) => {
       }
 
     });
+
+    // ==================================================
+    // INVALID / EXPIRED TOKEN
+    // ==================================================
 
     if (!user) {
       return res.status(400).json({
@@ -470,17 +519,21 @@ const resetPassword = async (req, res) => {
       );
 
     // ==================================================
-    // REMOVE RESET TOKEN
+    // REMOVE USED RESET TOKEN
     // ==================================================
 
     user.resetPasswordToken = null;
 
     user.resetPasswordExpire = null;
 
+    // ==================================================
+    // SAVE USER
+    // ==================================================
+
     await user.save();
 
     // ==================================================
-    // LOG
+    // SERVER LOG
     // ==================================================
 
     console.log(
