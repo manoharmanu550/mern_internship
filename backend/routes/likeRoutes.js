@@ -1,22 +1,28 @@
 const express = require("express");
 
-const router = express.Router();
+const router =
+  express.Router();
+
 
 const {
   likePost,
   unlikePost,
   getMyLikes,
   getLikes,
-} = require("../controllers/likeController");
+} = require(
+  "../controllers/likeController"
+);
+
 
 const {
   protect,
-} = require("../middleware/authMiddleware");
+} = require(
+  "../middleware/authMiddleware"
+);
 
 
 // =========================================================
-// LIKE POST
-// POST /api/likes
+// LIKE A POST
 // =========================================================
 
 router.post(
@@ -28,7 +34,7 @@ router.post(
 
 // =========================================================
 // GET MY LIKED POSTS
-// GET /api/likes/mine/all
+// IMPORTANT: This must come before /:postId
 // =========================================================
 
 router.get(
@@ -40,7 +46,6 @@ router.get(
 
 // =========================================================
 // GET LIKE COUNT
-// GET /api/likes/:postId
 // =========================================================
 
 router.get(
@@ -51,7 +56,6 @@ router.get(
 
 // =========================================================
 // UNLIKE POST
-// DELETE /api/likes/:postId
 // =========================================================
 
 router.delete(
@@ -61,4 +65,5 @@ router.delete(
 );
 
 
-module.exports = router;
+module.exports =
+  router;

@@ -1,52 +1,31 @@
 const mongoose = require("mongoose");
-
 const Like = require("../models/Like");
 const Post = require("../models/Post");
 
 
 // =========================================================
 // LIKE POST
-// POST /api/likes
 // =========================================================
 
 const likePost = async (req, res) => {
   try {
+    // Accept both post and postId
+    const postId =
+      req.body.postId ||
+      req.body.post;
 
-    const { post } = req.body;
-
-
-    console.log(
-      "========== LIKE POST =========="
-    );
-
-    console.log(
-      "Post:",
-      post
-    );
-
-    console.log(
-      "User:",
-      req.user?._id
-    );
+    console.log("=================================");
+    console.log("LIKE POST");
+    console.log("Post ID:", postId);
+    console.log("User ID:", req.user?._id);
+    console.log("=================================");
 
 
-    // -----------------------------------------------------
-    // LOGIN CHECK
-    // -----------------------------------------------------
+    // -------------------------------------------------------
+    // Validate Post ID
+    // -------------------------------------------------------
 
-    if (!req.user || !req.user._id) {
-      return res.status(401).json({
-        success: false,
-        message: "Please login first",
-      });
-    }
-
-
-    // -----------------------------------------------------
-    // POST VALIDATION
-    // -----------------------------------------------------
-
-    if (!post) {
+    if (!postId) {
       return res.status(400).json({
         success: false,
         message: "Post ID is required",
@@ -54,11 +33,11 @@ const likePost = async (req, res) => {
     }
 
 
-    if (
-      !mongoose.Types.ObjectId.isValid(
-        post
-      )
-    ) {
+    // -------------------------------------------------------
+    // Validate ObjectId
+    // -------------------------------------------------------
+
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
       return res.status(400).json({
         success: false,
         message: "Invalid Post ID",
@@ -66,14 +45,25 @@ const likePost = async (req, res) => {
     }
 
 
-    // -----------------------------------------------------
-    // CHECK POST
-    // -----------------------------------------------------
+    // -------------------------------------------------------
+    // Check User
+    // -------------------------------------------------------
 
-    const postExists =
-      await Post.findById(post);
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({
+        success: false,
+        message: "User authentication required",
+      });
+    }
 
-    if (!postExists) {
+
+    // -------------------------------------------------------
+    // Check Post Exists
+    // -------------------------------------------------------
+
+    const post = await Post.findById(postId);
+
+    if (!post) {
       return res.status(404).json({
         success: false,
         message: "Post not found",
@@ -81,42 +71,46 @@ const likePost = async (req, res) => {
     }
 
 
-    // -----------------------------------------------------
-    // CHECK EXISTING LIKE
-    // -----------------------------------------------------
+    // -------------------------------------------------------
+    // Check Existing Like
+    // -------------------------------------------------------
 
-    const alreadyLiked =
-      await Like.findOne({
-        post,
-        user: req.user._id,
-      });
+    const existingLike = await Like.findOne({
+      post: postId,
+      user: req.user._id,
+    });
 
 
-    if (alreadyLiked) {
+    if (existingLike) {
       return res.status(400).json({
         success: false,
-        message:
-          "You already liked this post",
-        like: alreadyLiked,
+        message: "You already liked this post",
+        liked: true,
+        like: existingLike,
       });
     }
 
 
-    // -----------------------------------------------------
-    // CREATE LIKE
-    // -----------------------------------------------------
+    // -------------------------------------------------------
+    // Create Like
+    // -------------------------------------------------------
 
-    const like =
-      await Like.create({
-        post,
-        user: req.user._id,
-      });
+    const like = await Like.create({
+      post: postId,
+      user: req.user._id,
+    });
 
 
-    return res.status(201).json({
+    console.log(
+      "Like Created:",
+      like._id
+    );
+
+
+    res.status(201).json({
       success: true,
-      message:
-        "Post Liked Successfully",
+      message: "Post Liked Successfully",
+      liked: true,
       like,
     });
 
@@ -124,16 +118,24 @@ const likePost = async (req, res) => {
   } catch (error) {
 
     console.error(
-      "LIKE POST ERROR:",
+      "Like Post Error:",
       error
     );
 
 
-    return res.status(500).json({
+    // Duplicate key protection
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: "You already liked this post",
+        liked: true,
+      });
+    }
+
+
+    res.status(500).json({
       success: false,
-      message:
-        error.message ||
-        "Failed to like post",
+      message: error.message,
     });
   }
 };
@@ -141,13 +143,18 @@ const likePost = async (req, res) => {
 
 // =========================================================
 // GET LIKE COUNT
-// GET /api/likes/:postId
 // =========================================================
 
 const getLikes = async (req, res) => {
   try {
 
     const { postId } = req.params;
+
+
+    console.log(
+      "GET LIKE COUNT:",
+      postId
+    );
 
 
     if (!postId) {
@@ -158,11 +165,7 @@ const getLikes = async (req, res) => {
     }
 
 
-    if (
-      !mongoose.Types.ObjectId.isValid(
-        postId
-      )
-    ) {
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
       return res.status(400).json({
         success: false,
         message: "Invalid Post ID",
@@ -176,33 +179,31 @@ const getLikes = async (req, res) => {
       });
 
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       likes,
+      count: likes,
     });
 
 
   } catch (error) {
 
     console.error(
-      "GET LIKES ERROR:",
+      "Get Likes Error:",
       error
     );
 
 
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
-      message:
-        error.message ||
-        "Failed to get likes",
+      message: error.message,
     });
   }
 };
 
 
 // =========================================================
-// GET MY LIKES
-// GET /api/likes/mine/all
+// GET MY LIKED POSTS
 // =========================================================
 
 const getMyLikes = async (req, res) => {
@@ -211,7 +212,7 @@ const getMyLikes = async (req, res) => {
     if (!req.user || !req.user._id) {
       return res.status(401).json({
         success: false,
-        message: "Please login first",
+        message: "User authentication required",
       });
     }
 
@@ -232,25 +233,30 @@ const getMyLikes = async (req, res) => {
         });
 
 
-    return res.status(200).json({
+    // Remove likes whose post no longer exists
+    const validLikes =
+      likes.filter(
+        (like) => like.post
+      );
+
+
+    res.status(200).json({
       success: true,
-      likes,
+      likes: validLikes,
     });
 
 
   } catch (error) {
 
     console.error(
-      "GET MY LIKES ERROR:",
+      "Get My Likes Error:",
       error
     );
 
 
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
-      message:
-        error.message ||
-        "Failed to get liked posts",
+      message: error.message,
     });
   }
 };
@@ -258,17 +264,21 @@ const getMyLikes = async (req, res) => {
 
 // =========================================================
 // UNLIKE POST
-// DELETE /api/likes/:postId
 // =========================================================
 
 const unlikePost = async (req, res) => {
   try {
 
-    const { postId } = req.params;
+    const { postId } =
+      req.params;
 
 
     console.log(
-      "========== UNLIKE POST =========="
+      "================================="
+    );
+
+    console.log(
+      "UNLIKE POST"
     );
 
     console.log(
@@ -281,22 +291,14 @@ const unlikePost = async (req, res) => {
       req.user?._id
     );
 
-
-    // -----------------------------------------------------
-    // LOGIN CHECK
-    // -----------------------------------------------------
-
-    if (!req.user || !req.user._id) {
-      return res.status(401).json({
-        success: false,
-        message: "Please login first",
-      });
-    }
+    console.log(
+      "================================="
+    );
 
 
-    // -----------------------------------------------------
-    // POST ID CHECK
-    // -----------------------------------------------------
+    // -------------------------------------------------------
+    // Validate Post ID
+    // -------------------------------------------------------
 
     if (!postId) {
       return res.status(400).json({
@@ -318,11 +320,23 @@ const unlikePost = async (req, res) => {
     }
 
 
-    // -----------------------------------------------------
-    // FIND LIKE
-    // -----------------------------------------------------
+    // -------------------------------------------------------
+    // Validate User
+    // -------------------------------------------------------
 
-    const like =
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({
+        success: false,
+        message: "User authentication required",
+      });
+    }
+
+
+    // -------------------------------------------------------
+    // Find Like
+    // -------------------------------------------------------
+
+    const matchingLike =
       await Like.findOne({
         post: postId,
         user: req.user._id,
@@ -331,50 +345,57 @@ const unlikePost = async (req, res) => {
 
     console.log(
       "Matching Like:",
-      like
+      matchingLike
     );
 
 
-    if (!like) {
+    // -------------------------------------------------------
+    // Like Not Found
+    // -------------------------------------------------------
+
+    if (!matchingLike) {
 
       return res.status(404).json({
         success: false,
-        message:
-          "Like Not Found for this user and post",
+        message: "Like Not Found for this user and post",
+        liked: false,
       });
-
     }
 
 
-    // -----------------------------------------------------
-    // DELETE LIKE
-    // -----------------------------------------------------
+    // -------------------------------------------------------
+    // Delete Like
+    // -------------------------------------------------------
 
     await Like.deleteOne({
-      _id: like._id,
+      _id: matchingLike._id,
     });
 
 
-    return res.status(200).json({
+    console.log(
+      "Like Deleted:",
+      matchingLike._id
+    );
+
+
+    res.status(200).json({
       success: true,
-      message:
-        "Post Unliked Successfully",
+      message: "Post Unliked Successfully",
+      liked: false,
     });
 
 
   } catch (error) {
 
     console.error(
-      "UNLIKE POST ERROR:",
+      "Unlike Post Error:",
       error
     );
 
 
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
-      message:
-        error.message ||
-        "Failed to unlike post",
+      message: error.message,
     });
   }
 };

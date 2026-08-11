@@ -7,20 +7,28 @@ const mongoose = require("mongoose");
 
 const likeSchema = new mongoose.Schema(
   {
+    // -------------------------------------------------------
+    // POST
+    // -------------------------------------------------------
+
     post: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Post",
       required: true,
-      index: true,
     },
+
+
+    // -------------------------------------------------------
+    // USER
+    // -------------------------------------------------------
 
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true,
     },
   },
+
   {
     timestamps: true,
   }
