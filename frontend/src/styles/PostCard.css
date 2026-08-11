@@ -1,60 +1,400 @@
+/* =========================================================
+   POST CARD - PREMIUM 3D DESIGN
+   ========================================================= */
+
 .post-card {
-  background: #ffffff;
-  border-radius: 18px;
+  position: relative;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.98),
+      rgba(248, 250, 252, 0.94)
+    );
+
+  border-radius: 22px;
+
   overflow: hidden;
+
   margin: 30px auto;
+
   max-width: 850px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-  transition: 0.3s;
+
+  border:
+    1px solid rgba(255, 255, 255, 0.85);
+
+  box-shadow:
+    0 15px 35px rgba(15, 23, 42, 0.10),
+    0 5px 12px rgba(15, 23, 42, 0.06),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9);
+
+  transform:
+    translateZ(0);
+
+  transform-style: preserve-3d;
+
+  transition:
+    transform 0.4s cubic-bezier(.2, .8, .2, 1),
+    box-shadow 0.4s ease;
 }
 
-.post-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+
+/* =========================================================
+   CARD SHINE EFFECT
+   ========================================================= */
+
+.post-card::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+
+  left: -130%;
+
+  width: 75%;
+
+  height: 100%;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.45),
+      transparent
+    );
+
+  transform:
+    skewX(-20deg);
+
+  transition:
+    left 0.8s ease;
+
+  pointer-events: none;
+
+  z-index: 5;
 }
+
+.post-card:hover::before {
+  left: 140%;
+}
+
+
+/* =========================================================
+   CARD HOVER
+   ========================================================= */
+
+.post-card:hover {
+  transform:
+    translateY(-12px)
+    translateZ(25px)
+    rotateX(1.5deg)
+    rotateY(-1deg);
+
+  box-shadow:
+    0 30px 60px rgba(15, 23, 42, 0.18),
+    0 12px 25px rgba(37, 99, 235, 0.10),
+    inset 0 2px 3px rgba(255, 255, 255, 0.95);
+}
+
+
+/* =========================================================
+   POST IMAGE
+   ========================================================= */
 
 .post-image {
   width: 100%;
+
   height: 280px;
+
   object-fit: cover;
+
+  display: block;
+
+  transform:
+    translateZ(8px);
+
+  transition:
+    transform 0.5s ease,
+    filter 0.5s ease;
 }
 
-.post-content {
-  padding: 25px;
+
+/* =========================================================
+   IMAGE HOVER
+   ========================================================= */
+
+.post-card:hover .post-image {
+  transform:
+    scale(1.06)
+    translateZ(15px);
+
+  filter:
+    brightness(1.05)
+    saturate(1.08);
 }
+
+
+/* =========================================================
+   POST CONTENT
+   ========================================================= */
+
+.post-content {
+  position: relative;
+
+  z-index: 6;
+
+  padding: 28px;
+
+  transform:
+    translateZ(15px);
+
+  background:
+    rgba(255, 255, 255, 0.70);
+
+  backdrop-filter: blur(8px);
+
+  -webkit-backdrop-filter: blur(8px);
+}
+
+
+/* =========================================================
+   POST TITLE
+   ========================================================= */
 
 .post-content h2 {
   color: #2563eb;
-  margin-bottom: 15px;
-  font-size: 28px;
+
+  margin:
+    0 0 15px;
+
+  font-size: 30px;
+
+  font-weight: 800;
+
+  line-height: 1.25;
+
+  transition:
+    color 0.3s ease,
+    transform 0.3s ease;
 }
 
-.post-content p {
-  color: #555;
-  line-height: 1.8;
-  margin-bottom: 20px;
+.post-card:hover .post-content h2 {
+  color: #1d4ed8;
+
+  transform:
+    translateY(-2px);
 }
+
+
+/* =========================================================
+   POST DESCRIPTION
+   ========================================================= */
+
+.post-content p {
+  color: #475569;
+
+  line-height: 1.8;
+
+  margin:
+    0 0 22px;
+
+  font-size: 16px;
+}
+
+
+/* =========================================================
+   POST FOOTER
+   ========================================================= */
 
 .post-footer {
   display: flex;
+
   justify-content: space-between;
+
   align-items: center;
+
+  gap: 15px;
+
+  padding-top: 5px;
 }
+
+
+/* =========================================================
+   AUTHOR / META
+   ========================================================= */
 
 .post-footer span {
-  font-weight: bold;
-  color: #444;
+  font-weight: 700;
+
+  color: #334155;
+
+  font-size: 15px;
 }
+
+
+/* =========================================================
+   READ BUTTON
+   ========================================================= */
 
 .read-btn {
-  background: #2563eb;
+  display: inline-block;
+
+  background:
+    linear-gradient(
+      145deg,
+      #3b82f6,
+      #2563eb
+    );
+
   color: white;
+
   text-decoration: none;
-  padding: 12px 22px;
-  border-radius: 8px;
-  transition: 0.3s;
+
+  padding:
+    12px 22px;
+
+  border-radius: 10px;
+
+  font-weight: 700;
+
+  box-shadow:
+    0 6px 0 #1d4ed8,
+    0 12px 20px rgba(37, 99, 235, 0.22),
+    inset 0 1px 2px rgba(255, 255, 255, 0.3);
+
+  transform:
+    translateY(0);
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    filter 0.25s ease;
 }
 
+
+/* =========================================================
+   READ BUTTON HOVER
+   ========================================================= */
+
 .read-btn:hover {
-  background: #1d4ed8;
+  filter:
+    brightness(1.08);
+
+  transform:
+    translateY(-4px);
+
+  box-shadow:
+    0 10px 0 #1d4ed8,
+    0 20px 30px rgba(37, 99, 235, 0.28),
+    inset 0 1px 2px rgba(255, 255, 255, 0.4);
+}
+
+
+/* =========================================================
+   READ BUTTON ACTIVE
+   ========================================================= */
+
+.read-btn:active {
+  transform:
+    translateY(4px);
+
+  box-shadow:
+    0 2px 0 #1d4ed8,
+    0 7px 12px rgba(37, 99, 235, 0.18);
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+  .post-card {
+    margin:
+      25px auto;
+
+    border-radius: 19px;
+  }
+
+  .post-card:hover {
+    transform:
+      translateY(-8px)
+      translateZ(12px)
+      scale(1.01);
+  }
+
+  .post-image {
+    height: 240px;
+  }
+
+  .post-content {
+    padding: 23px;
+  }
+
+  .post-content h2 {
+    font-size: 26px;
+  }
+
+  .post-content p {
+    font-size: 15px;
+
+    line-height: 1.7;
+  }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 450px) {
+
+  .post-card {
+    margin:
+      20px 10px;
+
+    border-radius: 17px;
+  }
+
+  .post-image {
+    height: 210px;
+  }
+
+  .post-content {
+    padding: 19px;
+  }
+
+  .post-content h2 {
+    font-size: 23px;
+  }
+
+  .post-content p {
+    font-size: 14px;
+
+    line-height: 1.65;
+  }
+
+  .post-footer {
+    flex-direction: column;
+
+    align-items: stretch;
+  }
+
+  .post-footer span {
+    text-align: center;
+  }
+
+  .read-btn {
+    text-align: center;
+
+    padding:
+      11px 18px;
+  }
+
+  .post-card:hover {
+    transform:
+      translateY(-5px);
+  }
 }

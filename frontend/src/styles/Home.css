@@ -1,198 +1,874 @@
-/* ===========================
-   HOME PAGE
-=========================== */
+/* =========================================================
+   HOME PAGE - PREMIUM 3D DESIGN
+   ========================================================= */
 
 .home {
   width: 100%;
   min-height: 100vh;
-  background: #f5f7fb;
+
+  background:
+    radial-gradient(
+      circle at 10% 10%,
+      rgba(59, 130, 246, 0.08),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 90% 50%,
+      rgba(124, 58, 237, 0.07),
+      transparent 30%
+    ),
+    #f5f7fb;
+
+  overflow-x: hidden;
 }
 
-/* ===========================
+
+/* =========================================================
    HERO SECTION
-=========================== */
+   ========================================================= */
 
 .hero {
-  background: linear-gradient(135deg, #2563eb, #3b82f6, #1d4ed8);
-  min-height: 420px;
+  position: relative;
+
+  min-height: 480px;
+
   display: flex;
   justify-content: center;
   align-items: center;
+
   text-align: center;
+
   color: white;
-  padding: 40px 20px;
+
+  padding: 50px 20px;
+
+  overflow: hidden;
+
+  perspective: 1400px;
+
+  background:
+    radial-gradient(
+      circle at 20% 20%,
+      rgba(255, 255, 255, 0.18),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
+      rgba(255, 255, 255, 0.12),
+      transparent 30%
+    ),
+    linear-gradient(
+      135deg,
+      #1e3a8a 0%,
+      #2563eb 42%,
+      #4f46e5 75%,
+      #6d28d9 100%
+    );
+
+  box-shadow:
+    0 20px 50px rgba(37, 99, 235, 0.22);
 }
+
+
+/* =========================================================
+   HERO BACKGROUND ORBS
+   ========================================================= */
+
+.hero::before {
+  content: "";
+
+  position: absolute;
+
+  width: 300px;
+  height: 300px;
+
+  top: -120px;
+  left: -80px;
+
+  border-radius: 50%;
+
+  background:
+    rgba(255, 255, 255, 0.10);
+
+  filter: blur(2px);
+
+  animation:
+    heroOrbOne 7s ease-in-out infinite;
+
+  pointer-events: none;
+}
+
+
+.hero::after {
+  content: "";
+
+  position: absolute;
+
+  width: 350px;
+  height: 350px;
+
+  bottom: -160px;
+  right: -100px;
+
+  border-radius: 50%;
+
+  background:
+    rgba(255, 255, 255, 0.09);
+
+  animation:
+    heroOrbTwo 8s ease-in-out infinite;
+
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   HERO CONTENT
+   ========================================================= */
 
 .hero-content {
-  max-width: 800px;
+  position: relative;
+
+  z-index: 2;
+
+  max-width: 850px;
+
+  transform-style: preserve-3d;
+
+  animation:
+    heroContentIn 0.9s ease-out;
 }
 
+
+/* =========================================================
+   HERO TITLE
+   ========================================================= */
+
 .hero h1 {
-  font-size: 58px;
-  font-weight: 700;
+  font-size: 62px;
+
+  font-weight: 800;
+
   margin-bottom: 20px;
+
   color: #fff;
-  text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+
+  line-height: 1.1;
+
+  letter-spacing: -1px;
+
+  text-shadow:
+    0 5px 10px rgba(0, 0, 0, 0.25),
+    0 15px 30px rgba(0, 0, 0, 0.15);
+
+  transform:
+    translateZ(45px);
+
+  transition:
+    transform 0.4s ease,
+    text-shadow 0.4s ease;
 }
+
+
+.hero h1:hover {
+  transform:
+    translateY(-5px)
+    translateZ(65px);
+
+  text-shadow:
+    0 8px 15px rgba(0, 0, 0, 0.30),
+    0 20px 40px rgba(0, 0, 0, 0.18);
+}
+
+
+/* =========================================================
+   HERO DESCRIPTION
+   ========================================================= */
 
 .hero p {
   font-size: 22px;
+
   color: #f1f5f9;
+
   line-height: 1.8;
+
   margin-bottom: 35px;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+  text-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.20);
+
+  transform:
+    translateZ(30px);
 }
+
+
+/* =========================================================
+   HERO BUTTON
+   ========================================================= */
 
 .hero button {
-  background: white;
+  position: relative;
+
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #eef2ff
+    );
+
   color: #2563eb;
+
   border: none;
-  padding: 16px 42px;
+
+  padding: 16px 44px;
+
   border-radius: 50px;
+
   font-size: 18px;
-  font-weight: bold;
+
+  font-weight: 800;
+
   cursor: pointer;
-  transition: 0.3s;
+
+  box-shadow:
+    0 8px 0 rgba(219, 234, 254, 1),
+    0 18px 30px rgba(0, 0, 0, 0.20),
+    inset 0 2px 3px rgba(255, 255, 255, 1);
+
+  transform:
+    translateY(0)
+    translateZ(35px);
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    filter 0.25s ease;
 }
+
 
 .hero button:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.25);
+  filter: brightness(1.04);
+
+  transform:
+    translateY(-5px)
+    translateZ(50px);
+
+  box-shadow:
+    0 12px 0 rgba(219, 234, 254, 1),
+    0 25px 40px rgba(0, 0, 0, 0.25),
+    inset 0 2px 3px rgba(255, 255, 255, 1);
 }
 
-/* ===========================
+
+.hero button:active {
+  transform:
+    translateY(5px)
+    translateZ(25px);
+
+  box-shadow:
+    0 3px 0 rgba(219, 234, 254, 1),
+    0 8px 15px rgba(0, 0, 0, 0.18);
+}
+
+
+/* =========================================================
    BLOG SECTION
-=========================== */
+   ========================================================= */
 
 .blog-section {
   max-width: 1200px;
+
   margin: auto;
-  padding: 60px 20px;
+
+  padding: 70px 20px 80px;
+
+  perspective: 1400px;
 }
+
+
+/* =========================================================
+   BLOG TITLE
+   ========================================================= */
 
 .blog-section h2 {
   text-align: center;
-  font-size: 42px;
+
+  font-size: 44px;
+
+  font-weight: 800;
+
   color: #2563eb;
-  margin-bottom: 45px;
+
+  margin-bottom: 50px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #2563eb,
+      #4f46e5,
+      #7c3aed
+    );
+
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  background-clip: text;
+
+  text-shadow:
+    0 8px 20px rgba(37, 99, 235, 0.10);
 }
 
-/* ===========================
+
+/* =========================================================
    POSTS GRID
-=========================== */
+   ========================================================= */
 
 .posts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
-  gap: 30px;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(330px, 1fr)
+    );
+
+  gap: 32px;
+
+  transform-style: preserve-3d;
 }
 
-/* ===========================
+
+/* =========================================================
    POST CARD
-=========================== */
+   ========================================================= */
 
 .post-card {
-  background: white;
-  border-radius: 18px;
+  position: relative;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.98),
+      rgba(248, 250, 252, 0.94)
+    );
+
+  border-radius: 22px;
+
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  transition: 0.3s;
+
+  border:
+    1px solid rgba(255, 255, 255, 0.8);
+
+  box-shadow:
+    0 15px 35px rgba(15, 23, 42, 0.10),
+    0 5px 12px rgba(15, 23, 42, 0.06),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9);
+
+  transform:
+    translateZ(0);
+
+  transform-style: preserve-3d;
+
+  transition:
+    transform 0.45s cubic-bezier(.2,.8,.2,1),
+    box-shadow 0.45s ease;
 }
 
-.post-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.15);
+
+/* =========================================================
+   POST CARD SHINE
+   ========================================================= */
+
+.post-card::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: -130%;
+
+  width: 75%;
+  height: 100%;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.45),
+      transparent
+    );
+
+  transform:
+    skewX(-20deg);
+
+  transition:
+    left 0.8s ease;
+
+  z-index: 3;
+
+  pointer-events: none;
 }
+
+
+.post-card:hover::before {
+  left: 140%;
+}
+
+
+/* =========================================================
+   POST CARD HOVER
+   ========================================================= */
+
+.post-card:hover {
+  transform:
+    translateY(-14px)
+    translateZ(25px)
+    rotateX(2deg)
+    rotateY(-1deg);
+
+  box-shadow:
+    0 30px 60px rgba(15, 23, 42, 0.18),
+    0 12px 25px rgba(37, 99, 235, 0.10),
+    inset 0 2px 3px rgba(255, 255, 255, 0.95);
+}
+
+
+/* =========================================================
+   POST IMAGE
+   ========================================================= */
 
 .post-card img {
   width: 100%;
+
   height: 230px;
+
   object-fit: cover;
+
+  display: block;
+
+  transition:
+    transform 0.5s ease,
+    filter 0.5s ease;
+
+  transform:
+    translateZ(8px);
 }
 
-.post-content {
-  padding: 20px;
+
+.post-card:hover img {
+  transform:
+    scale(1.07)
+    translateZ(15px);
+
+  filter:
+    brightness(1.05)
+    saturate(1.08);
 }
+
+
+/* =========================================================
+   POST CONTENT
+   ========================================================= */
+
+.post-content {
+  position: relative;
+
+  z-index: 4;
+
+  padding: 23px;
+
+  transform:
+    translateZ(15px);
+}
+
+
+/* =========================================================
+   POST TITLE
+   ========================================================= */
 
 .post-content h3 {
   font-size: 24px;
-  color: #222;
+
+  font-weight: 750;
+
+  color: #0f172a;
+
   margin-bottom: 12px;
+
+  transition:
+    color 0.3s ease,
+    transform 0.3s ease;
 }
 
+
+.post-card:hover .post-content h3 {
+  color: #2563eb;
+
+  transform:
+    translateY(-2px);
+}
+
+
+/* =========================================================
+   POST DESCRIPTION
+   ========================================================= */
+
 .post-content p {
-  color: #666;
+  color: #64748b;
+
   line-height: 1.7;
+
   margin-bottom: 15px;
 }
 
+
+/* =========================================================
+   POST DATE / META
+   ========================================================= */
+
 .post-content small {
-  color: #888;
+  color: #94a3b8;
+
+  font-size: 13px;
 }
+
+
+/* =========================================================
+   READ BUTTON
+   ========================================================= */
 
 .read-btn {
   display: inline-block;
+
   margin-top: 18px;
-  padding: 10px 22px;
-  background: #2563eb;
+
+  padding: 11px 23px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #3b82f6,
+      #2563eb
+    );
+
   color: white;
+
   text-decoration: none;
-  border-radius: 8px;
-  transition: 0.3s;
+
+  border-radius: 10px;
+
+  font-weight: 700;
+
+  box-shadow:
+    0 6px 0 #1d4ed8,
+    0 12px 20px rgba(37, 99, 235, 0.22),
+    inset 0 1px 2px rgba(255, 255, 255, 0.30);
+
+  transform:
+    translateY(0);
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    filter 0.25s ease;
 }
+
 
 .read-btn:hover {
-  background: #1d4ed8;
+  background:
+    linear-gradient(
+      145deg,
+      #60a5fa,
+      #2563eb
+    );
+
+  filter:
+    brightness(1.05);
+
+  transform:
+    translateY(-3px);
+
+  box-shadow:
+    0 9px 0 #1d4ed8,
+    0 18px 28px rgba(37, 99, 235, 0.28),
+    inset 0 1px 2px rgba(255, 255, 255, 0.40);
 }
 
-/* ===========================
+
+.read-btn:active {
+  transform:
+    translateY(4px);
+
+  box-shadow:
+    0 2px 0 #1d4ed8,
+    0 6px 10px rgba(37, 99, 235, 0.18);
+}
+
+
+/* =========================================================
    EMPTY STATE
-=========================== */
+   ========================================================= */
 
 .no-posts {
   text-align: center;
+
   font-size: 24px;
-  color: #666;
+
+  color: #64748b;
+
   margin-top: 60px;
+
+  padding: 45px 20px;
+
+  background:
+    rgba(255, 255, 255, 0.75);
+
+  border-radius: 20px;
+
+  box-shadow:
+    0 15px 30px rgba(15, 23, 42, 0.08);
 }
 
-/* ===========================
+
+/* =========================================================
    LOADING
-=========================== */
+   ========================================================= */
 
 .loading {
   text-align: center;
+
   font-size: 28px;
-  padding: 80px;
+
+  padding: 100px 20px;
+
   color: #2563eb;
+
+  font-weight: 700;
+
+  animation:
+    loadingPulse 1.5s ease-in-out infinite;
 }
 
-/* ===========================
-   RESPONSIVE
-=========================== */
+
+/* =========================================================
+   ANIMATIONS
+   ========================================================= */
+
+@keyframes heroOrbOne {
+
+  0%,
+  100% {
+    transform:
+      translate(0, 0)
+      scale(1);
+  }
+
+  50% {
+    transform:
+      translate(60px, 35px)
+      scale(1.08);
+  }
+}
+
+
+@keyframes heroOrbTwo {
+
+  0%,
+  100% {
+    transform:
+      translate(0, 0)
+      scale(1);
+  }
+
+  50% {
+    transform:
+      translate(-50px, -35px)
+      scale(1.10);
+  }
+}
+
+
+@keyframes heroContentIn {
+
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(25px)
+      translateZ(0);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0)
+      translateZ(0);
+  }
+}
+
+
+@keyframes loadingPulse {
+
+  0%,
+  100% {
+    opacity: 0.55;
+
+    transform:
+      scale(1);
+  }
+
+  50% {
+    opacity: 1;
+
+    transform:
+      scale(1.03);
+  }
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
 
 @media (max-width: 768px) {
 
   .hero {
-    min-height: 350px;
-    padding: 30px 15px;
+    min-height: 390px;
+
+    padding:
+      40px
+      15px;
   }
 
   .hero h1 {
-    font-size: 38px;
+    font-size: 40px;
+
+    letter-spacing: -0.5px;
   }
 
   .hero p {
     font-size: 18px;
+
+    line-height: 1.7;
   }
 
   .hero button {
     width: 100%;
+
     max-width: 250px;
   }
 
-  .blog-section h2 {
-    font-size: 32px;
+  .blog-section {
+    padding:
+      50px
+      15px
+      60px;
   }
 
+  .blog-section h2 {
+    font-size: 34px;
+
+    margin-bottom: 35px;
+  }
+
+  .posts-grid {
+    grid-template-columns: 1fr;
+
+    gap: 24px;
+  }
+
+  .post-card:hover {
+    transform:
+      translateY(-8px)
+      translateZ(12px)
+      scale(1.01);
+  }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 450px) {
+
+  .hero {
+    min-height: 350px;
+
+    padding:
+      35px
+      12px;
+  }
+
+  .hero h1 {
+    font-size: 32px;
+
+    line-height: 1.15;
+  }
+
+  .hero p {
+    font-size: 16px;
+
+    line-height: 1.6;
+
+    margin-bottom: 28px;
+  }
+
+  .hero button {
+    padding:
+      14px
+      30px;
+
+    font-size: 16px;
+  }
+
+  .blog-section {
+    padding:
+      40px
+      12px
+      50px;
+  }
+
+  .blog-section h2 {
+    font-size: 29px;
+  }
+
+  .post-card {
+    border-radius: 18px;
+  }
+
+  .post-card img {
+    height: 210px;
+  }
+
+  .post-content {
+    padding: 19px;
+  }
+
+  .post-content h3 {
+    font-size: 21px;
+  }
+
+  .post-content p {
+    font-size: 14px;
+  }
+
+  .read-btn {
+    padding:
+      10px
+      20px;
+  }
+
+  .no-posts {
+    font-size: 20px;
+
+    padding: 35px 15px;
+  }
+
+  .loading {
+    font-size: 23px;
+
+    padding: 80px 15px;
+  }
 }

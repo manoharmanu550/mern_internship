@@ -12,6 +12,10 @@ function Register() {
     password: "",
   });
 
+  const [recoveryPin, setRecoveryPin] = useState("");
+
+  const [showRecoveryPin, setShowRecoveryPin] = useState(false);
+
   const handleChange = (e) => {
     setForm({
       ...form,
@@ -25,48 +29,135 @@ function Register() {
     try {
       const res = await API.post("/auth/register", form);
 
-      alert(res.data.message);
+      // Get recovery PIN from backend
+      if (res.data.recoveryPin) {
+        setRecoveryPin(res.data.recoveryPin);
+        setShowRecoveryPin(true);
+      } else {
+        alert(res.data.message);
+        navigate("/login");
+      }
 
-      navigate("/login");
     } catch (err) {
-      alert(err.response?.data?.message || "Registration Failed");
+      alert(
+        err.response?.data?.message ||
+        "Registration Failed"
+      );
     }
+  };
+
+  const handleContinueToLogin = () => {
+    navigate("/login");
   };
 
   return (
     <div className="register-page">
-      <form className="register-card" onSubmit={handleSubmit}>
-        <h1>Create Account 🚀</h1>
 
-        <input
-          type="text"
-          name="name"
-          placeholder="Full Name"
-          value={form.name}
-          onChange={handleChange}
-          required
-        />
+      {!showRecoveryPin ? (
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-          required
-        />
+        <form
+          className="register-card"
+          onSubmit={handleSubmit}
+        >
+          <h1>Create Account 🚀</h1>
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          required
-        />
+          <input
+            type="text"
+            name="name"
+            placeholder="Full Name"
+            value={form.name}
+            onChange={handleChange}
+            required
+          />
 
-        <button type="submit">Register</button>
-      </form>
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={form.email}
+            onChange={handleChange}
+            required
+          />
+
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={form.password}
+            onChange={handleChange}
+            required
+          />
+
+          <button type="submit">
+            Register
+          </button>
+        </form>
+
+      ) : (
+
+        <div className="register-card">
+
+          <h1>
+            Registration Successful 🎉
+          </h1>
+
+          <p>
+            Your account has been created successfully.
+          </p>
+
+          <div
+            style={{
+              marginTop: "20px",
+              padding: "20px",
+              border: "2px solid #2563eb",
+              borderRadius: "10px",
+              textAlign: "center",
+            }}
+          >
+
+            <p>
+              <strong>
+                Your Recovery PIN
+              </strong>
+            </p>
+
+            <h2
+              style={{
+                letterSpacing: "6px",
+                margin: "15px 0",
+              }}
+            >
+              {recoveryPin}
+            </h2>
+
+            <p
+              style={{
+                fontSize: "14px",
+                color: "#666",
+              }}
+            >
+              Save this PIN safely.
+              <br />
+              You will need it if you forget
+              your password.
+            </p>
+
+          </div>
+
+          <button
+            type="button"
+            onClick={handleContinueToLogin}
+            style={{
+              marginTop: "20px",
+            }}
+          >
+            Continue to Login
+          </button>
+
+        </div>
+
+      )}
+
     </div>
   );
 }

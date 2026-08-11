@@ -13,7 +13,12 @@ function CommentCard({ comment, refresh }) {
 
       refresh();
     } catch (err) {
-      alert(err.response?.data?.message || "Delete Failed");
+      console.error("Delete comment error:", err);
+
+      alert(
+        err.response?.data?.message ||
+        "Delete Failed"
+      );
     }
   };
 
@@ -26,12 +31,18 @@ function CommentCard({ comment, refresh }) {
         borderRadius: "10px",
       }}
     >
-      <h4>{comment.author?.name}</h4>
+      <h4>
+        {comment.author?.name || "Unknown User"}
+      </h4>
 
-      <p>{comment.text}</p>
+      <p>
+        {comment.text}
+      </p>
 
       <small>
-        {new Date(comment.createdAt).toLocaleString()}
+        {comment.createdAt
+          ? new Date(comment.createdAt).toLocaleString()
+          : ""}
       </small>
 
       <br />

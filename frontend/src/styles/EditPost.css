@@ -1,85 +1,546 @@
-.edit-page{
-    max-width:800px;
-    margin:40px auto;
-    padding:20px;
+/* =========================================================
+   EDIT POST PAGE - PREMIUM 3D DESIGN
+   ========================================================= */
+
+.edit-page {
+    max-width: 850px;
+    margin: 40px auto;
+    padding: 30px 20px 60px;
+
+    perspective: 1400px;
+    transform-style: preserve-3d;
 }
 
-.edit-header{
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:15px;
-    margin-bottom:35px;
+
+/* =========================================================
+   EDIT HEADER
+   ========================================================= */
+
+.edit-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    gap: 18px;
+
+    margin-bottom: 40px;
+
+    transform-style: preserve-3d;
 }
 
-.edit-header span{
-    font-size:45px;
+.edit-header span {
+    font-size: 52px;
+
+    display: inline-block;
+
+    filter:
+        drop-shadow(0 8px 12px rgba(0, 0, 0, 0.20));
+
+    animation:
+        editIconFloat 3s ease-in-out infinite;
 }
 
-.edit-header h1{
-    font-size:48px;
-    color:#fff;
-    background:linear-gradient(135deg,#2563eb,#1d4ed8);
-    padding:12px 35px;
-    border-radius:12px;
-    box-shadow:0 10px 25px rgba(37,99,235,.35);
+.edit-header h1 {
+    font-size: 46px;
+    font-weight: 800;
+
+    color: #fff;
+
+    background:
+        linear-gradient(
+            135deg,
+            #2563eb 0%,
+            #3b82f6 45%,
+            #1d4ed8 100%
+        );
+
+    padding: 14px 38px;
+
+    border-radius: 18px;
+
+    box-shadow:
+        0 18px 35px rgba(37, 99, 235, 0.35),
+        0 8px 15px rgba(0, 0, 0, 0.10),
+        inset 0 2px 2px rgba(255, 255, 255, 0.35),
+        inset 0 -5px 10px rgba(0, 0, 0, 0.12);
+
+    text-shadow:
+        0 3px 8px rgba(0, 0, 0, 0.25);
+
+    transform: translateZ(25px);
+
+    transition:
+        transform 0.35s ease,
+        box-shadow 0.35s ease;
 }
 
-.edit-form{
-    background:#fff;
-    padding:35px;
-    border-radius:18px;
-    box-shadow:0 10px 25px rgba(0,0,0,.12);
+.edit-header h1:hover {
+    transform:
+        translateY(-5px)
+        translateZ(40px)
+        rotateX(2deg);
+
+    box-shadow:
+        0 28px 50px rgba(37, 99, 235, 0.45),
+        inset 0 2px 3px rgba(255, 255, 255, 0.45),
+        inset 0 -6px 12px rgba(0, 0, 0, 0.15);
 }
 
-.edit-form label{
-    display:block;
-    margin-top:18px;
-    margin-bottom:8px;
-    font-size:17px;
-    font-weight:600;
-    color:#333;
+
+/* =========================================================
+   EDIT FORM
+   ========================================================= */
+
+.edit-form {
+    position: relative;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.97),
+            rgba(248, 250, 252, 0.92)
+        );
+
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+
+    padding: 40px;
+
+    border-radius: 24px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.8);
+
+    box-shadow:
+        0 25px 55px rgba(15, 23, 42, 0.18),
+        0 10px 20px rgba(15, 23, 42, 0.08),
+        inset 0 2px 2px rgba(255, 255, 255, 0.9);
+
+    transform:
+        translateZ(0);
+
+    transform-style: preserve-3d;
+
+    overflow: hidden;
+
+    transition:
+        transform 0.4s ease,
+        box-shadow 0.4s ease;
 }
+
+.edit-form:hover {
+    transform:
+        translateY(-7px)
+        translateZ(15px);
+
+    box-shadow:
+        0 35px 75px rgba(15, 23, 42, 0.24),
+        0 15px 30px rgba(37, 99, 235, 0.10),
+        inset 0 2px 3px rgba(255, 255, 255, 0.95);
+}
+
+
+/* =========================================================
+   FORM SHINE
+   ========================================================= */
+
+.edit-form::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: -130%;
+
+    width: 75%;
+    height: 100%;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.35),
+            transparent
+        );
+
+    transform:
+        skewX(-20deg);
+
+    transition:
+        left 0.8s ease;
+
+    pointer-events: none;
+}
+
+.edit-form:hover::before {
+    left: 140%;
+}
+
+
+/* =========================================================
+   LABELS
+   ========================================================= */
+
+.edit-form label {
+    display: block;
+
+    margin-top: 20px;
+    margin-bottom: 9px;
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+    color: #1e293b;
+
+    transform: translateZ(15px);
+}
+
+
+/* =========================================================
+   INPUTS
+   ========================================================= */
 
 .edit-form input,
 .edit-form textarea,
-.edit-form select{
-    width:100%;
-    padding:14px;
-    border:1px solid #ddd;
-    border-radius:10px;
-    font-size:16px;
-    outline:none;
-    transition:.3s;
-    box-sizing:border-box;
+.edit-form select {
+    width: 100%;
+
+    padding: 15px 16px;
+
+    border:
+        1px solid #dbe3ef;
+
+    border-radius: 12px;
+
+    font-size: 16px;
+
+    color: #1e293b;
+
+    background:
+        rgba(255, 255, 255, 0.88);
+
+    outline: none;
+
+    box-sizing: border-box;
+
+    box-shadow:
+        inset 0 2px 5px rgba(15, 23, 42, 0.04),
+        0 3px 8px rgba(15, 23, 42, 0.04);
+
+    transition:
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        transform 0.25s ease,
+        background 0.25s ease;
 }
+
+
+/* =========================================================
+   PLACEHOLDER
+   ========================================================= */
+
+.edit-form input::placeholder,
+.edit-form textarea::placeholder {
+    color: #94a3b8;
+}
+
+
+/* =========================================================
+   INPUT FOCUS
+   ========================================================= */
 
 .edit-form input:focus,
 .edit-form textarea:focus,
-.edit-form select:focus{
-    border-color:#2563eb;
-    box-shadow:0 0 8px rgba(37,99,235,.25);
+.edit-form select:focus {
+    border-color: #2563eb;
+
+    background: #fff;
+
+    transform:
+        translateY(-2px);
+
+    box-shadow:
+        0 8px 20px rgba(37, 99, 235, 0.12),
+        0 0 0 3px rgba(37, 99, 235, 0.10),
+        inset 0 2px 5px rgba(37, 99, 235, 0.03);
 }
 
-.edit-form textarea{
-    resize:vertical;
+
+/* =========================================================
+   TEXTAREA
+   ========================================================= */
+
+.edit-form textarea {
+    resize: vertical;
+
+    min-height: 180px;
+
+    line-height: 1.6;
 }
 
-.update-btn{
-    width:100%;
-    margin-top:30px;
-    padding:15px;
-    border:none;
-    border-radius:10px;
-    background:linear-gradient(135deg,#2563eb,#1d4ed8);
-    color:#fff;
-    font-size:18px;
-    font-weight:bold;
-    cursor:pointer;
-    transition:.3s;
+
+/* =========================================================
+   SELECT
+   ========================================================= */
+
+.edit-form select {
+    cursor: pointer;
 }
 
-.update-btn:hover{
-    transform:translateY(-3px);
-    box-shadow:0 10px 20px rgba(37,99,235,.35);
+
+/* =========================================================
+   UPDATE BUTTON
+   ========================================================= */
+
+.update-btn {
+    width: 100%;
+
+    margin-top: 32px;
+
+    padding: 16px;
+
+    border: none;
+
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #2563eb 0%,
+            #3b82f6 45%,
+            #1d4ed8 100%
+        );
+
+    color: #fff;
+
+    font-size: 18px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.3px;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 8px 0 #1e40af,
+        0 15px 25px rgba(37, 99, 235, 0.25),
+        inset 0 1px 2px rgba(255, 255, 255, 0.35);
+
+    transform:
+        translateY(0);
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        filter 0.25s ease;
+}
+
+
+/* =========================================================
+   UPDATE BUTTON HOVER
+   ========================================================= */
+
+.update-btn:hover {
+    filter: brightness(1.08);
+
+    transform:
+        translateY(-4px);
+
+    box-shadow:
+        0 12px 0 #1e40af,
+        0 22px 35px rgba(37, 99, 235, 0.32),
+        inset 0 1px 2px rgba(255, 255, 255, 0.45);
+}
+
+
+/* =========================================================
+   UPDATE BUTTON ACTIVE
+   ========================================================= */
+
+.update-btn:active {
+    transform:
+        translateY(5px);
+
+    box-shadow:
+        0 3px 0 #1e40af,
+        0 7px 12px rgba(37, 99, 235, 0.18);
+}
+
+
+/* =========================================================
+   DISABLED BUTTON
+   ========================================================= */
+
+.update-btn:disabled {
+    opacity: 0.65;
+
+    cursor: not-allowed;
+
+    transform: none;
+
+    box-shadow:
+        0 5px 0 #1e40af,
+        0 8px 15px rgba(37, 99, 235, 0.15);
+}
+
+
+/* =========================================================
+   FLOATING EDIT ICON
+   ========================================================= */
+
+@keyframes editIconFloat {
+
+    0%,
+    100% {
+        transform:
+            translateY(0)
+            rotate(0deg);
+    }
+
+    50% {
+        transform:
+            translateY(-7px)
+            rotate(3deg);
+    }
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    .edit-page {
+        margin: 25px auto;
+
+        padding:
+            25px
+            15px
+            45px;
+    }
+
+    .edit-header {
+        margin-bottom: 30px;
+
+        gap: 10px;
+    }
+
+    .edit-header span {
+        font-size: 38px;
+    }
+
+    .edit-header h1 {
+        font-size: 34px;
+
+        padding:
+            11px
+            25px;
+
+        border-radius: 14px;
+    }
+
+    .edit-form {
+        padding: 28px 22px;
+
+        border-radius: 20px;
+    }
+
+    .edit-form input,
+    .edit-form textarea,
+    .edit-form select {
+        font-size: 15px;
+
+        padding:
+            13px
+            14px;
+    }
+
+    .edit-form textarea {
+        min-height: 140px;
+    }
+
+    .update-btn {
+        padding: 15px;
+
+        font-size: 17px;
+    }
+
+    .edit-form:hover {
+        transform:
+            translateY(-4px);
+    }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 450px) {
+
+    .edit-page {
+        padding:
+            20px
+            12px
+            35px;
+    }
+
+    .edit-header {
+        flex-direction: column;
+
+        gap: 8px;
+    }
+
+    .edit-header span {
+        font-size: 36px;
+    }
+
+    .edit-header h1 {
+        font-size: 28px;
+
+        padding:
+            10px
+            20px;
+    }
+
+    .edit-form {
+        padding:
+            23px
+            17px;
+
+        border-radius: 17px;
+    }
+
+    .edit-form label {
+        font-size: 15px;
+    }
+
+    .edit-form input,
+    .edit-form textarea,
+    .edit-form select {
+        padding: 12px;
+
+        border-radius: 10px;
+    }
+
+    .edit-form textarea {
+        min-height: 125px;
+    }
+
+    .update-btn {
+        margin-top: 27px;
+
+        padding: 14px;
+
+        font-size: 16px;
+
+        border-radius: 10px;
+    }
+
+    .edit-form:hover {
+        transform:
+            translateY(-3px);
+    }
 }

@@ -1,22 +1,277 @@
-.like-card{
-    background:#fff;
-    border-radius:15px;
-    overflow:hidden;
-    box-shadow:0 8px 20px rgba(0,0,0,.12);
-    transition:.3s;
+/* =========================================================
+   LIKE CARD - PREMIUM 3D DESIGN
+   ========================================================= */
+
+.like-card {
+    position: relative;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.98),
+            rgba(248, 250, 252, 0.94)
+        );
+
+    border-radius: 20px;
+
+    overflow: hidden;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.8);
+
+    box-shadow:
+        0 14px 30px rgba(15, 23, 42, 0.12),
+        0 5px 12px rgba(15, 23, 42, 0.06),
+        inset 0 1px 2px rgba(255, 255, 255, 0.9);
+
+    transform:
+        translateZ(0);
+
+    transform-style: preserve-3d;
+
+    transition:
+        transform 0.4s cubic-bezier(.2,.8,.2,1),
+        box-shadow 0.4s ease;
 }
 
-.like-card:hover{
-    transform:translateY(-5px);
+
+/* =========================================================
+   CARD SHINE
+   ========================================================= */
+
+.like-card::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: -130%;
+
+    width: 75%;
+    height: 100%;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.45),
+            transparent
+        );
+
+    transform:
+        skewX(-20deg);
+
+    transition:
+        left 0.75s ease;
+
+    pointer-events: none;
+
+    z-index: 3;
 }
 
-.like-card img{
-    width:100%;
-    height:220px;
-    object-fit:cover;
+
+.like-card:hover::before {
+    left: 140%;
 }
 
-.like-card-body{
-    padding:20px;
-    text-align:center;
+
+/* =========================================================
+   3D HOVER
+   ========================================================= */
+
+.like-card:hover {
+    transform:
+        translateY(-12px)
+        translateZ(25px)
+        rotateX(2deg)
+        rotateY(-1deg);
+
+    box-shadow:
+        0 28px 55px rgba(15, 23, 42, 0.18),
+        0 10px 22px rgba(37, 99, 235, 0.10),
+        inset 0 2px 3px rgba(255, 255, 255, 0.95);
+}
+
+
+/* =========================================================
+   IMAGE
+   ========================================================= */
+
+.like-card img {
+    width: 100%;
+
+    height: 220px;
+
+    object-fit: cover;
+
+    display: block;
+
+    transform:
+        translateZ(8px);
+
+    transition:
+        transform 0.5s ease,
+        filter 0.5s ease;
+}
+
+
+.like-card:hover img {
+    transform:
+        scale(1.07)
+        translateZ(15px);
+
+    filter:
+        brightness(1.05)
+        saturate(1.08);
+}
+
+
+/* =========================================================
+   CARD BODY
+   ========================================================= */
+
+.like-card-body {
+    position: relative;
+
+    z-index: 4;
+
+    padding: 22px;
+
+    text-align: center;
+
+    transform:
+        translateZ(15px);
+
+    background:
+        rgba(255, 255, 255, 0.65);
+
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+
+/* =========================================================
+   OPTIONAL TEXT SUPPORT
+   ========================================================= */
+
+.like-card-body h3 {
+    margin:
+        0 0 10px;
+
+    color: #0f172a;
+
+    font-size: 23px;
+
+    font-weight: 750;
+
+    transition:
+        color 0.3s ease,
+        transform 0.3s ease;
+}
+
+
+.like-card:hover .like-card-body h3 {
+    color: #2563eb;
+
+    transform:
+        translateY(-2px);
+}
+
+
+.like-card-body p {
+    color: #64748b;
+
+    line-height: 1.6;
+
+    margin:
+        6px 0;
+}
+
+
+/* =========================================================
+   LIKE ICON / BUTTON SUPPORT
+   ========================================================= */
+
+.like-card-body button {
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.like-card-body button:hover {
+    transform:
+        translateY(-3px)
+        scale(1.04);
+}
+
+
+.like-card-body button:active {
+    transform:
+        translateY(2px)
+        scale(0.98);
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    .like-card {
+        border-radius: 17px;
+    }
+
+    .like-card:hover {
+        transform:
+            translateY(-7px)
+            translateZ(12px)
+            scale(1.01);
+    }
+
+    .like-card img {
+        height: 210px;
+    }
+
+    .like-card-body {
+        padding: 19px;
+    }
+
+    .like-card-body h3 {
+        font-size: 21px;
+    }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 450px) {
+
+    .like-card {
+        border-radius: 15px;
+    }
+
+    .like-card img {
+        height: 195px;
+    }
+
+    .like-card-body {
+        padding: 17px;
+    }
+
+    .like-card-body h3 {
+        font-size: 20px;
+    }
+
+    .like-card-body p {
+        font-size: 14px;
+    }
+
+    .like-card:hover {
+        transform:
+            translateY(-5px);
+    }
 }

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+
 import {
   useNavigate,
   useParams,
@@ -15,18 +16,26 @@ function ResetPassword() {
   const navigate = useNavigate();
 
 
-  const [password, setPassword] = useState("");
+  const [password, setPassword] =
+    useState("");
 
   const [confirmPassword, setConfirmPassword] =
     useState("");
 
 
-  const [message, setMessage] = useState("");
+  const [message, setMessage] =
+    useState("");
 
-  const [error, setError] = useState("");
+  const [error, setError] =
+    useState("");
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] =
+    useState(false);
 
+
+  // ======================================================
+  // SUBMIT
+  // ======================================================
 
   const handleSubmit = async (e) => {
 
@@ -36,7 +45,24 @@ function ResetPassword() {
     setError("");
 
 
-    // Password length
+    // ==================================================
+    // TOKEN CHECK
+    // ==================================================
+
+    if (!token) {
+
+      setError(
+        "Reset token is missing"
+      );
+
+      return;
+    }
+
+
+    // ==================================================
+    // PASSWORD CHECK
+    // ==================================================
+
     if (password.length < 6) {
 
       setError(
@@ -47,7 +73,10 @@ function ResetPassword() {
     }
 
 
-    // Password match
+    // ==================================================
+    // CONFIRM PASSWORD
+    // ==================================================
+
     if (password !== confirmPassword) {
 
       setError(
@@ -63,6 +92,10 @@ function ResetPassword() {
       setLoading(true);
 
 
+      // ==================================================
+      // RESET PASSWORD API
+      // ==================================================
+
       const response = await API.post(
         `/auth/reset-password/${token}`,
         {
@@ -71,12 +104,25 @@ function ResetPassword() {
       );
 
 
+      // ==================================================
+      // SUCCESS
+      // ==================================================
+
       setMessage(
-        response.data.message
+        response.data.message ||
+        "Password reset successful."
       );
 
 
-      // Go to login after 2 seconds
+      // Clear fields
+      setPassword("");
+      setConfirmPassword("");
+
+
+      // ==================================================
+      // GO TO LOGIN
+      // ==================================================
+
       setTimeout(() => {
 
         navigate("/login");
@@ -86,6 +132,11 @@ function ResetPassword() {
 
     } catch (err) {
 
+      console.error(
+        "Reset password error:",
+        err
+      );
+
       setError(
         err.response?.data?.message ||
         "Invalid or expired reset link"
@@ -94,6 +145,7 @@ function ResetPassword() {
     } finally {
 
       setLoading(false);
+
     }
   };
 
@@ -104,7 +156,9 @@ function ResetPassword() {
 
       <div className="auth-card">
 
-        <h2>Reset Password</h2>
+        <h2>
+          Reset Password
+        </h2>
 
 
         <p>
@@ -114,6 +168,8 @@ function ResetPassword() {
 
         <form onSubmit={handleSubmit}>
 
+          {/* NEW PASSWORD */}
+
           <input
             type="password"
             placeholder="New password"
@@ -121,9 +177,12 @@ function ResetPassword() {
             onChange={(e) =>
               setPassword(e.target.value)
             }
+            minLength={6}
             required
           />
 
+
+          {/* CONFIRM PASSWORD */}
 
           <input
             type="password"
@@ -134,9 +193,12 @@ function ResetPassword() {
                 e.target.value
               )
             }
+            minLength={6}
             required
           />
 
+
+          {/* BUTTON */}
 
           <button
             type="submit"
@@ -145,12 +207,17 @@ function ResetPassword() {
 
             {loading
               ? "Resetting..."
-              : "Reset Password"}
+              : "Reset Password"
+            }
 
           </button>
 
         </form>
 
+
+        {/* ==================================================
+            SUCCESS
+        ================================================== */}
 
         {message && (
 
@@ -161,6 +228,10 @@ function ResetPassword() {
         )}
 
 
+        {/* ==================================================
+            ERROR
+        ================================================== */}
+
         {error && (
 
           <p className="error-message">
@@ -170,9 +241,13 @@ function ResetPassword() {
         )}
 
 
-        <Link to="/login">
-          Back to Login
-        </Link>
+        <div style={{ marginTop: "15px" }}>
+
+          <Link to="/login">
+            Back to Login
+          </Link>
+
+        </div>
 
       </div>
 

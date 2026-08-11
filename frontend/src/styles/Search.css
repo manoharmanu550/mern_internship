@@ -1,94 +1,573 @@
-.search-page{
-    max-width:1100px;
-    margin:40px auto;
-    padding:20px;
-    text-align:center;
+/* =========================================================
+   SEARCH PAGE - PREMIUM 3D DESIGN
+   ========================================================= */
+
+.search-page {
+    max-width: 1100px;
+
+    margin: 40px auto;
+
+    padding: 30px 20px 60px;
+
+    text-align: center;
+
+    perspective: 1400px;
+
+    transform-style: preserve-3d;
 }
 
-.search-header{
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:12px;
-    margin-bottom:25px;
+
+/* =========================================================
+   SEARCH HEADER
+   ========================================================= */
+
+.search-header {
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 15px;
+
+    margin-bottom: 30px;
+
+    transform-style: preserve-3d;
 }
 
-.search-icon{
-    font-size:30px;
+
+/* =========================================================
+   SEARCH ICON
+   ========================================================= */
+
+.search-icon {
+    font-size: 42px;
+
+    display: inline-block;
+
+    filter:
+        drop-shadow(
+            0 7px 10px
+            rgba(37, 99, 235, 0.25)
+        );
+
+    animation:
+        searchIconFloat
+        3s
+        ease-in-out
+        infinite;
 }
 
-.search-header h1{
-    background:linear-gradient(135deg,#2563eb,#1d4ed8);
-    color:#fff;
-    padding:10px 28px;
-    border-radius:12px;
-    font-size:44px;
-    font-weight:700;
-    box-shadow:0 8px 20px rgba(37,99,235,.3);
+
+/* =========================================================
+   SEARCH TITLE
+   ========================================================= */
+
+.search-header h1 {
+    background:
+        linear-gradient(
+            135deg,
+            #2563eb,
+            #4f46e5,
+            #7c3aed
+        );
+
+    color: #fff;
+
+    padding:
+        12px 30px;
+
+    margin: 0;
+
+    border-radius: 15px;
+
+    font-size: 44px;
+
+    font-weight: 800;
+
+    box-shadow:
+        0 16px 32px
+        rgba(37, 99, 235, 0.30),
+
+        0 6px 12px
+        rgba(15, 23, 42, 0.10),
+
+        inset 0 2px 3px
+        rgba(255, 255, 255, 0.35),
+
+        inset 0 -5px 10px
+        rgba(0, 0, 0, 0.12);
+
+    text-shadow:
+        0 3px 8px
+        rgba(0, 0, 0, 0.22);
+
+    transform:
+        translateZ(25px);
+
+    transition:
+        transform 0.35s ease,
+        box-shadow 0.35s ease;
 }
 
-.search-box{
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:12px;
-    margin-bottom:30px;
+.search-header h1:hover {
+    transform:
+        translateY(-5px)
+        translateZ(40px)
+        rotateX(2deg);
+
+    box-shadow:
+        0 25px 45px
+        rgba(37, 99, 235, 0.38),
+
+        0 10px 20px
+        rgba(15, 23, 42, 0.12),
+
+        inset 0 2px 4px
+        rgba(255, 255, 255, 0.45);
 }
 
-.search-box input{
 
-    width:500px;
-    padding:15px;
+/* =========================================================
+   SEARCH BOX
+   ========================================================= */
 
-    border:1px solid #ddd;
-    border-radius:10px;
+.search-box {
+    display: flex;
 
-    font-size:16px;
+    justify-content: center;
 
+    align-items: center;
+
+    gap: 12px;
+
+    margin-bottom: 35px;
+
+    padding:
+        12px;
+
+    max-width: 750px;
+
+    margin-left: auto;
+    margin-right: auto;
+
+    background:
+        rgba(255, 255, 255, 0.72);
+
+    backdrop-filter:
+        blur(12px);
+
+    -webkit-backdrop-filter:
+        blur(12px);
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.85);
+
+    border-radius: 17px;
+
+    box-shadow:
+        0 15px 30px
+        rgba(15, 23, 42, 0.10),
+
+        inset 0 1px 2px
+        rgba(255, 255, 255, 0.95);
+
+    transform:
+        translateZ(15px);
+
+    transition:
+        box-shadow 0.3s ease,
+        transform 0.3s ease;
 }
 
-.search-box button{
+.search-box:focus-within {
+    transform:
+        translateY(-3px)
+        translateZ(25px);
 
-    padding:15px 28px;
+    box-shadow:
+        0 22px 40px
+        rgba(37, 99, 235, 0.16),
 
-    background:#2563eb;
-    color:white;
-
-    border:none;
-    border-radius:10px;
-
-    cursor:pointer;
-
-    font-weight:bold;
-
+        0 0 0 3px
+        rgba(37, 99, 235, 0.08);
 }
 
-.search-box button:hover{
 
-    background:#1d4ed8;
+/* =========================================================
+   SEARCH INPUT
+   ========================================================= */
 
+.search-box input {
+    width: 500px;
+
+    max-width: 100%;
+
+    padding:
+        15px 18px;
+
+    border:
+        1px solid
+        #dbe3ef;
+
+    border-radius: 11px;
+
+    font-size: 16px;
+
+    color: #1e293b;
+
+    background:
+        rgba(255, 255, 255, 0.96);
+
+    outline: none;
+
+    box-shadow:
+        inset 0 2px 5px
+        rgba(15, 23, 42, 0.05);
+
+    transition:
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        transform 0.25s ease;
 }
 
-.total-results{
-
-    margin-bottom:30px;
-
-    color:#333;
-
+.search-box input::placeholder {
+    color: #94a3b8;
 }
 
-.search-results{
+.search-box input:focus {
+    border-color:
+        #60a5fa;
 
-    display:grid;
+    transform:
+        translateY(-2px);
 
-    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+    box-shadow:
+        0 7px 16px
+        rgba(37, 99, 235, 0.12),
 
-    gap:30px;
-
+        0 0 0 3px
+        rgba(37, 99, 235, 0.08);
 }
 
-.no-posts{
 
-    color:#777;
+/* =========================================================
+   SEARCH BUTTON
+   ========================================================= */
 
+.search-box button {
+    padding:
+        15px 28px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #3b82f6,
+            #2563eb
+        );
+
+    color: white;
+
+    border: none;
+
+    border-radius: 11px;
+
+    cursor: pointer;
+
+    font-weight: 750;
+
+    font-size: 16px;
+
+    white-space: nowrap;
+
+    box-shadow:
+        0 5px 0
+        #1d4ed8,
+
+        0 10px 20px
+        rgba(37, 99, 235, 0.22),
+
+        inset 0 1px 2px
+        rgba(255, 255, 255, 0.30);
+
+    transform:
+        translateY(0);
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        filter 0.25s ease;
+}
+
+
+/* =========================================================
+   SEARCH BUTTON HOVER
+   ========================================================= */
+
+.search-box button:hover {
+    filter:
+        brightness(1.08);
+
+    transform:
+        translateY(-4px);
+
+    box-shadow:
+        0 9px 0
+        #1d4ed8,
+
+        0 18px 28px
+        rgba(37, 99, 235, 0.28),
+
+        inset 0 1px 2px
+        rgba(255, 255, 255, 0.40);
+}
+
+
+/* =========================================================
+   SEARCH BUTTON ACTIVE
+   ========================================================= */
+
+.search-box button:active {
+    transform:
+        translateY(4px);
+
+    box-shadow:
+        0 2px 0
+        #1d4ed8,
+
+        0 6px 12px
+        rgba(37, 99, 235, 0.18);
+}
+
+
+/* =========================================================
+   TOTAL RESULTS
+   ========================================================= */
+
+.total-results {
+    margin-bottom: 35px;
+
+    color: #475569;
+
+    font-size: 19px;
+
+    font-weight: 650;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   SEARCH RESULTS GRID
+   ========================================================= */
+
+.search-results {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(320px, 1fr)
+        );
+
+    gap: 30px;
+
+    text-align: left;
+
+    transform-style: preserve-3d;
+}
+
+
+/* =========================================================
+   RESULT CARD HOVER SUPPORT
+   ========================================================= */
+
+.search-results .post-card {
+    transition:
+        transform 0.4s ease,
+        box-shadow 0.4s ease;
+}
+
+.search-results .post-card:hover {
+    transform:
+        translateY(-10px)
+        translateZ(20px);
+}
+
+
+/* =========================================================
+   NO POSTS
+   ========================================================= */
+
+.no-posts {
+    color: #64748b;
+
+    font-size: 24px;
+
+    font-weight: 600;
+
+    margin:
+        55px auto;
+
+    padding:
+        35px 20px;
+
+    max-width: 650px;
+
+    background:
+        rgba(255, 255, 255, 0.75);
+
+    backdrop-filter:
+        blur(10px);
+
+    border-radius: 18px;
+
+    box-shadow:
+        0 15px 30px
+        rgba(15, 23, 42, 0.08);
+}
+
+
+/* =========================================================
+   SEARCH ICON ANIMATION
+   ========================================================= */
+
+@keyframes searchIconFloat {
+
+    0%,
+    100% {
+        transform:
+            translateY(0)
+            rotate(0deg);
+    }
+
+    50% {
+        transform:
+            translateY(-7px)
+            rotate(4deg);
+    }
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    .search-page {
+        margin:
+            25px auto;
+
+        padding:
+            25px 15px 45px;
+    }
+
+    .search-header {
+        gap: 10px;
+    }
+
+    .search-icon {
+        font-size: 36px;
+    }
+
+    .search-header h1 {
+        font-size: 34px;
+
+        padding:
+            10px 23px;
+
+        border-radius: 13px;
+    }
+
+    .search-box {
+        width: 100%;
+
+        padding: 10px;
+
+        border-radius: 14px;
+    }
+
+    .search-box input {
+        width: 100%;
+
+        padding:
+            13px 14px;
+    }
+
+    .search-box button {
+        padding:
+            13px 20px;
+    }
+
+    .search-results {
+        grid-template-columns: 1fr;
+
+        gap: 22px;
+    }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 500px) {
+
+    .search-page {
+        padding:
+            20px 12px 35px;
+    }
+
+    .search-header {
+        flex-direction: column;
+
+        gap: 7px;
+
+        margin-bottom: 23px;
+    }
+
+    .search-icon {
+        font-size: 38px;
+    }
+
+    .search-header h1 {
+        font-size: 28px;
+
+        padding:
+            9px 20px;
+    }
+
+    .search-box {
+        flex-direction: column;
+
+        gap: 10px;
+
+        padding: 12px;
+    }
+
+    .search-box input {
+        width: 100%;
+
+        font-size: 15px;
+    }
+
+    .search-box button {
+        width: 100%;
+
+        padding:
+            13px;
+    }
+
+    .total-results {
+        font-size: 17px;
+    }
+
+    .no-posts {
+        font-size: 20px;
+
+        padding:
+            30px 15px;
+    }
 }

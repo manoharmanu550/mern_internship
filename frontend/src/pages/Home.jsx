@@ -1,70 +1,76 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import API from "../services/api";
-import PostCard from "../components/PostCard";
-import "../styles/Home.css";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
-function Home() {
+const Home = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  const navigate = useNavigate();
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    fetchPosts();
+    axios
+      .get(
+        "https://mern-internship-backend-p9ri.onrender.com/api/posts"
+      )
+      .then((res) => {
+        console.log("Posts response:", res.data);
+
+        // Handle different response formats
+        if (Array.isArray(res.data)) {
+          setPosts(res.data);
+        } else if (Array.isArray(res.data.posts)) {
+          setPosts(res.data.posts);
+        } else if (Array.isArray(res.data.data)) {
+          setPosts(res.data.data);
+        } else {
+          setPosts([]);
+        }
+
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching posts:", err);
+
+        setError("Failed to load posts. Please try again.");
+        setLoading(false);
+      });
   }, []);
 
-  const fetchPosts = async () => {
-    try {
-      const res = await API.get("/posts");
-      setPosts(res.data.posts || []);
-    } catch (err) {
-      console.log(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
-    <div className="home">
-      {/* Hero Section */}
-      <section className="hero">
-        <div className="hero-content">
-          <h1>Welcome to Blogging Platform</h1>
+    <div className="home-container">
+      <h1>Home</h1>
 
-          <p>
-            Discover amazing articles, share your ideas and connect with
-            developers around the world.
-          </p>
+      {loading && <p>Loading posts...</p>}
 
-          <button onClick={() => navigate("/search")}>
-            Start Reading
-          </button>
-        </div>
-      </section>
+      {error && <p>{error}</p>}
 
-      {/* Latest Blogs */}
-      <section className="blog-section">
-        <h2>Latest Blogs</h2>
+      {!loading && !error && posts.length === 0 && (
+        <p>No posts available.</p>
+      )}
 
-        {loading ? (
-          <div className="loading">
-            <h2>Loading Posts...</h2>
+      {!loading &&
+        !error &&
+        posts.map((post) => (
+          <div key={post._id || post.id} className="post-card">
+            <h2>{post.title || "Untitled Post"}</h2>
+
+            <p>
+              {post.content ||
+                post.description ||
+                "No content available"}
+            </p>
+
+            {post.author && (
+              <small>
+                Author:{" "}
+                {typeof post.author === "object"
+                  ? post.author.name || post.author.username
+                  : post.author}
+              </small>
+            )}
           </div>
-        ) : posts.length === 0 ? (
-          <div className="no-posts">
-            <h2>No Posts Available</h2>
-          </div>
-        ) : (
-          <div className="posts-grid">
-            {posts.map((post) => (
-              <PostCard key={post._id} post={post} />
-            ))}
-          </div>
-        )}
-      </section>
+        ))}
     </div>
   );
-}
+};
 
 export default Home;

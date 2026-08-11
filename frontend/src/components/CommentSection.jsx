@@ -8,28 +8,41 @@ function CommentSection({ postId }) {
 
   useEffect(() => {
     fetchComments();
-  }, []);
+  }, [postId]);
 
   const fetchComments = async () => {
     try {
       const res = await API.get(`/comments/${postId}`);
-      setComments(res.data.comments);
+
+      setComments(res.data.comments || []);
     } catch (err) {
-      console.log(err);
+      console.error("Fetch comments error:", err);
     }
   };
 
+  // ======================================================
+  // ADD COMMENT
+  // ======================================================
+
   const addComment = async () => {
+    // Check empty comment
     if (!text.trim()) {
-      return alert("Enter Comment");
+      alert("Enter Comment");
+      return;
+    }
+
+    // Check post ID
+    if (!postId) {
+      alert("Post ID is missing");
+      return;
     }
 
     try {
-      await API.post(
+      const response = await API.post(
         "/comments",
         {
-          post: postId,
-          text,
+          postId: postId,
+          text: text.trim(),
         },
         {
           headers: {
@@ -38,17 +51,41 @@ function CommentSection({ postId }) {
         }
       );
 
+      console.log(
+        "Comment added successfully:",
+        response.data
+      );
+
+      // Clear textarea
       setText("");
 
-      fetchComments();
+      // Refresh comments
+      await fetchComments();
+
     } catch (err) {
-      alert(err.response?.data?.message || "Comment Failed");
+      console.error(
+        "Add comment error:",
+        err.response?.data || err
+      );
+
+      alert(
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        "Comment Failed"
+      );
     }
   };
 
   return (
     <div style={{ marginTop: "40px" }}>
-      <h2>💬 Comments ({comments.length})</h2>
+
+      <h2>
+        💬 Comments ({comments.length})
+      </h2>
+
+      {/* ==================================================
+          COMMENT TEXTAREA
+      ================================================== */}
 
       <textarea
         rows="4"
@@ -59,11 +96,17 @@ function CommentSection({ postId }) {
           width: "100%",
           padding: "10px",
           marginTop: "10px",
+          boxSizing: "border-box",
+          resize: "vertical",
         }}
       />
 
       <br />
       <br />
+
+      {/* ==================================================
+          ADD COMMENT BUTTON
+      ================================================== */}
 
       <button
         onClick={addComment}
@@ -79,23 +122,40 @@ function CommentSection({ postId }) {
         Add Comment
       </button>
 
+      {/* ==================================================
+          SEPARATOR
+      ================================================== */}
+
       <hr
         style={{
           margin: "30px 0",
         }}
       />
 
+      {/* ==================================================
+          COMMENTS LIST
+      ================================================== */}
+
       {comments.length === 0 ? (
-        <h3>No Comments Yet</h3>
+
+        <h3>
+          No Comments Yet
+        </h3>
+
       ) : (
+
         comments.map((comment) => (
+
           <CommentCard
             key={comment._id}
             comment={comment}
             refresh={fetchComments}
           />
+
         ))
+
       )}
+
     </div>
   );
 }

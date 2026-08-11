@@ -1,199 +1,790 @@
-.profile-page{
-    max-width:1200px;
-    margin:40px auto;
-    padding:20px;
+/* =========================================================
+   PROFILE PAGE - PREMIUM 3D DESIGN
+   ========================================================= */
+
+.profile-page {
+    max-width: 1200px;
+
+    margin: 40px auto;
+
+    padding: 30px 20px 60px;
+
+    perspective: 1400px;
+
+    transform-style: preserve-3d;
 }
 
-/* Header */
 
-.profile-header{
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:15px;
-    margin-bottom:35px;
+/* =========================================================
+   PROFILE HEADER
+   ========================================================= */
+
+.profile-header {
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 18px;
+
+    margin-bottom: 40px;
+
+    transform-style: preserve-3d;
 }
 
-.profile-header span{
-    font-size:48px;
+.profile-header span {
+    font-size: 52px;
+
+    display: inline-block;
+
+    filter:
+        drop-shadow(
+            0 8px 12px
+            rgba(37, 99, 235, 0.25)
+        );
+
+    animation:
+        profileIconFloat
+        3s
+        ease-in-out
+        infinite;
 }
 
-.profile-header h1{
-    font-size:48px;
-    font-weight:700;
-    color:#fff;
-    background:linear-gradient(135deg,#2563eb,#1d4ed8);
-    padding:12px 35px;
-    border-radius:12px;
-    box-shadow:0 10px 25px rgba(37,99,235,.35);
+.profile-header h1 {
+    font-size: 46px;
+
+    font-weight: 800;
+
+    color: #fff;
+
+    margin: 0;
+
+    padding:
+        14px 35px;
+
+    border-radius: 17px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #2563eb 0%,
+            #3b82f6 45%,
+            #1d4ed8 100%
+        );
+
+    box-shadow:
+        0 18px 35px
+        rgba(37, 99, 235, 0.32),
+
+        0 7px 15px
+        rgba(15, 23, 42, 0.10),
+
+        inset 0 2px 3px
+        rgba(255, 255, 255, 0.35),
+
+        inset 0 -5px 10px
+        rgba(0, 0, 0, 0.12);
+
+    text-shadow:
+        0 3px 8px
+        rgba(0, 0, 0, 0.22);
+
+    transform:
+        translateZ(25px);
+
+    transition:
+        transform 0.35s ease,
+        box-shadow 0.35s ease;
 }
 
-/* Stats */
+.profile-header h1:hover {
+    transform:
+        translateY(-5px)
+        translateZ(40px)
+        rotateX(2deg);
 
-.stats{
-    display:flex;
-    justify-content:center;
-    gap:25px;
-    flex-wrap:wrap;
-    margin-bottom:45px;
+    box-shadow:
+        0 28px 50px
+        rgba(37, 99, 235, 0.40),
+
+        inset 0 2px 4px
+        rgba(255, 255, 255, 0.45),
+
+        inset 0 -6px 12px
+        rgba(0, 0, 0, 0.15);
 }
 
-.stat-card{
-    width:220px;
-    background:#fff;
-    border-radius:15px;
-    padding:25px;
-    text-align:center;
-    box-shadow:0 8px 20px rgba(0,0,0,.12);
-    transition:.3s;
+
+/* =========================================================
+   PROFILE STATS
+   ========================================================= */
+
+.stats {
+    display: flex;
+
+    justify-content: center;
+
+    align-items: stretch;
+
+    gap: 25px;
+
+    flex-wrap: wrap;
+
+    margin-bottom: 50px;
+
+    transform-style: preserve-3d;
 }
 
-.stat-card:hover{
-    transform:translateY(-8px);
+
+/* =========================================================
+   STAT CARD
+   ========================================================= */
+
+.stat-card {
+    position: relative;
+
+    width: 220px;
+
+    padding: 28px 22px;
+
+    text-align: center;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.98),
+            rgba(248, 250, 252, 0.94)
+        );
+
+    border:
+        1px solid rgba(255, 255, 255, 0.85);
+
+    border-radius: 20px;
+
+    box-shadow:
+        0 15px 30px
+        rgba(15, 23, 42, 0.11),
+
+        0 5px 12px
+        rgba(15, 23, 42, 0.06),
+
+        inset 0 1px 2px
+        rgba(255, 255, 255, 0.95);
+
+    transform:
+        translateZ(0);
+
+    transform-style: preserve-3d;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.4s
+        cubic-bezier(.2,.8,.2,1),
+
+        box-shadow 0.4s ease;
 }
 
-.stat-card h2{
-    font-size:34px;
-    color:#2563eb;
-    margin-bottom:10px;
+.stat-card:hover {
+    transform:
+        translateY(-12px)
+        translateZ(25px)
+        rotateX(3deg)
+        rotateY(-1deg);
+
+    box-shadow:
+        0 28px 55px
+        rgba(15, 23, 42, 0.18),
+
+        0 10px 20px
+        rgba(37, 99, 235, 0.10),
+
+        inset 0 2px 3px
+        rgba(255, 255, 255, 1);
 }
 
-.stat-card p{
-    font-size:18px;
-    color:#444;
-    font-weight:600;
+
+/* =========================================================
+   STAT CARD TOP GLOW
+   ========================================================= */
+
+.stat-card::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 12%;
+
+    width: 76%;
+    height: 4px;
+
+    border-radius:
+        0 0 10px 10px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #2563eb,
+            #4f46e5,
+            #7c3aed
+        );
+
+    opacity: 0.85;
 }
 
-.stat-card a{
-    text-decoration:none;
-    color:#444;
+
+/* =========================================================
+   STAT NUMBER
+   ========================================================= */
+
+.stat-card h2 {
+    font-size: 36px;
+
+    color: #2563eb;
+
+    margin:
+        5px 0 10px;
+
+    font-weight: 800;
+
+    transform:
+        translateZ(20px);
+
+    text-shadow:
+        0 5px 12px
+        rgba(37, 99, 235, 0.15);
 }
 
-.stat-card a:hover{
-    color:#2563eb;
+
+/* =========================================================
+   STAT TEXT
+   ========================================================= */
+
+.stat-card p {
+    font-size: 18px;
+
+    color: #475569;
+
+    font-weight: 650;
+
+    margin: 0;
+
+    transform:
+        translateZ(12px);
 }
 
-/* Posts */
 
-.posts-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(340px,1fr));
-    gap:30px;
+/* =========================================================
+   STAT LINK
+   ========================================================= */
+
+.stat-card a {
+    text-decoration: none;
+
+    color: #475569;
+
+    transition:
+        color 0.25s ease,
+        transform 0.25s ease;
 }
 
-.profile-card{
-    background:#fff;
-    border-radius:18px;
-    overflow:hidden;
-    box-shadow:0 10px 25px rgba(0,0,0,.12);
-    transition:.3s;
+.stat-card a:hover {
+    color: #2563eb;
 }
 
-.profile-card:hover{
-    transform:translateY(-8px);
+
+/* =========================================================
+   POSTS GRID
+   ========================================================= */
+
+.posts-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(340px, 1fr)
+        );
+
+    gap: 32px;
+
+    transform-style: preserve-3d;
 }
 
-.profile-card img{
-    width:100%;
-    height:230px;
-    object-fit:cover;
+
+/* =========================================================
+   PROFILE POST CARD
+   ========================================================= */
+
+.profile-card {
+    position: relative;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.98),
+            rgba(248, 250, 252, 0.94)
+        );
+
+    border:
+        1px solid rgba(255, 255, 255, 0.85);
+
+    border-radius: 21px;
+
+    overflow: hidden;
+
+    box-shadow:
+        0 15px 35px
+        rgba(15, 23, 42, 0.11),
+
+        0 5px 12px
+        rgba(15, 23, 42, 0.06),
+
+        inset 0 1px 2px
+        rgba(255, 255, 255, 0.95);
+
+    transform:
+        translateZ(0);
+
+    transform-style: preserve-3d;
+
+    transition:
+        transform 0.4s
+        cubic-bezier(.2,.8,.2,1),
+
+        box-shadow 0.4s ease;
 }
 
-.profile-card-content{
-    padding:20px;
-    text-align:center;
+
+/* =========================================================
+   PROFILE CARD HOVER
+   ========================================================= */
+
+.profile-card:hover {
+    transform:
+        translateY(-12px)
+        translateZ(25px)
+        rotateX(2deg)
+        rotateY(-1deg);
+
+    box-shadow:
+        0 30px 60px
+        rgba(15, 23, 42, 0.18),
+
+        0 12px 25px
+        rgba(37, 99, 235, 0.10),
+
+        inset 0 2px 3px
+        rgba(255, 255, 255, 1);
 }
 
-.profile-card-content h3{
-    font-size:25px;
-    color:#222;
-    margin-bottom:10px;
+
+/* =========================================================
+   PROFILE CARD IMAGE
+   ========================================================= */
+
+.profile-card img {
+    width: 100%;
+
+    height: 230px;
+
+    object-fit: cover;
+
+    display: block;
+
+    transform:
+        translateZ(8px);
+
+    transition:
+        transform 0.5s ease,
+        filter 0.5s ease;
 }
 
-.profile-card-content p{
-    color:#666;
-    margin:8px 0;
-    line-height:1.5;
+.profile-card:hover img {
+    transform:
+        scale(1.07)
+        translateZ(15px);
+
+    filter:
+        brightness(1.05)
+        saturate(1.08);
 }
 
-/* Buttons */
 
-.profile-buttons{
-    display:flex;
-    justify-content:center;
-    gap:15px;
-    margin-top:18px;
+/* =========================================================
+   PROFILE CARD CONTENT
+   ========================================================= */
+
+.profile-card-content {
+    padding: 23px;
+
+    text-align: center;
+
+    position: relative;
+
+    z-index: 3;
+
+    transform:
+        translateZ(15px);
 }
+
+.profile-card-content h3 {
+    font-size: 25px;
+
+    color: #0f172a;
+
+    margin:
+        0 0 10px;
+
+    font-weight: 750;
+
+    transition:
+        color 0.3s ease,
+        transform 0.3s ease;
+}
+
+.profile-card:hover
+.profile-card-content h3 {
+    color: #2563eb;
+
+    transform:
+        translateY(-2px);
+}
+
+.profile-card-content p {
+    color: #64748b;
+
+    margin:
+        8px 0;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   PROFILE BUTTONS
+   ========================================================= */
+
+.profile-buttons {
+    display: flex;
+
+    justify-content: center;
+
+    gap: 15px;
+
+    margin-top: 20px;
+
+    transform:
+        translateZ(20px);
+}
+
+
+/* =========================================================
+   COMMON BUTTON
+   ========================================================= */
 
 .edit-btn,
-.delete-btn{
-    border:none;
-    color:#fff;
-    padding:10px 18px;
-    border-radius:8px;
-    cursor:pointer;
-    font-size:16px;
-    transition:.3s;
+.delete-btn {
+    border: none;
+
+    color: #fff;
+
+    padding:
+        11px 19px;
+
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        filter 0.25s ease;
 }
 
-.edit-btn{
-    background:#2563eb;
+
+/* =========================================================
+   EDIT BUTTON
+   ========================================================= */
+
+.edit-btn {
+    background:
+        linear-gradient(
+            145deg,
+            #3b82f6,
+            #2563eb
+        );
+
+    box-shadow:
+        0 5px 0 #1d4ed8,
+        0 10px 18px
+        rgba(37, 99, 235, 0.20);
 }
 
-.edit-btn:hover{
-    background:#1d4ed8;
+.edit-btn:hover {
+    filter: brightness(1.08);
+
+    transform:
+        translateY(-3px);
+
+    box-shadow:
+        0 8px 0 #1d4ed8,
+        0 16px 25px
+        rgba(37, 99, 235, 0.28);
 }
 
-.delete-btn{
-    background:#dc2626;
+.edit-btn:active {
+    transform:
+        translateY(3px);
+
+    box-shadow:
+        0 2px 0 #1d4ed8,
+        0 5px 10px
+        rgba(37, 99, 235, 0.18);
 }
 
-.delete-btn:hover{
-    background:#b91c1c;
+
+/* =========================================================
+   DELETE BUTTON
+   ========================================================= */
+
+.delete-btn {
+    background:
+        linear-gradient(
+            145deg,
+            #ef4444,
+            #dc2626
+        );
+
+    box-shadow:
+        0 5px 0 #b91c1c,
+        0 10px 18px
+        rgba(220, 38, 38, 0.20);
 }
 
-/* No Posts */
+.delete-btn:hover {
+    filter: brightness(1.08);
 
-.no-posts{
-    text-align:center;
-    color:#666;
-    margin-top:60px;
-    font-size:28px;
+    transform:
+        translateY(-3px);
+
+    box-shadow:
+        0 8px 0 #b91c1c,
+        0 16px 25px
+        rgba(220, 38, 38, 0.28);
 }
 
-/* Responsive */
+.delete-btn:active {
+    transform:
+        translateY(3px);
 
-@media(max-width:768px){
+    box-shadow:
+        0 2px 0 #b91c1c,
+        0 5px 10px
+        rgba(220, 38, 38, 0.18);
+}
 
-    .profile-header h1{
-        font-size:34px;
-        padding:10px 20px;
+
+/* =========================================================
+   NO POSTS
+   ========================================================= */
+
+.no-posts {
+    text-align: center;
+
+    color: #64748b;
+
+    margin-top: 60px;
+
+    font-size: 28px;
+
+    font-weight: 600;
+
+    padding:
+        45px 20px;
+
+    background:
+        rgba(255, 255, 255, 0.75);
+
+    border-radius: 20px;
+
+    box-shadow:
+        0 15px 30px
+        rgba(15, 23, 42, 0.08);
+}
+
+
+/* =========================================================
+   PROFILE ICON ANIMATION
+   ========================================================= */
+
+@keyframes profileIconFloat {
+
+    0%,
+    100% {
+        transform:
+            translateY(0)
+            rotate(0deg);
     }
 
-    .profile-header span{
-        font-size:36px;
+    50% {
+        transform:
+            translateY(-7px)
+            rotate(3deg);
+    }
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    .profile-page {
+        margin: 25px auto;
+
+        padding:
+            25px 15px 45px;
     }
 
-    .stats{
-        flex-direction:column;
-        align-items:center;
+    .profile-header {
+        gap: 10px;
+
+        margin-bottom: 32px;
     }
 
-    .stat-card{
-        width:90%;
+    .profile-header h1 {
+        font-size: 34px;
+
+        padding:
+            10px 22px;
+
+        border-radius: 14px;
     }
 
-    .posts-grid{
-        grid-template-columns:1fr;
+    .profile-header span {
+        font-size: 38px;
     }
 
-    .profile-buttons{
-        flex-direction:column;
+    .stats {
+        flex-direction: column;
+
+        align-items: center;
+
+        gap: 18px;
+    }
+
+    .stat-card {
+        width: 90%;
+
+        max-width: 360px;
+    }
+
+    .posts-grid {
+        grid-template-columns: 1fr;
+
+        gap: 24px;
+    }
+
+    .profile-card:hover {
+        transform:
+            translateY(-7px)
+            translateZ(10px)
+            scale(1.01);
+    }
+
+    .profile-buttons {
+        gap: 12px;
+    }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 450px) {
+
+    .profile-page {
+        padding:
+            20px 12px 35px;
+    }
+
+    .profile-header {
+        flex-direction: column;
+
+        gap: 7px;
+    }
+
+    .profile-header h1 {
+        font-size: 28px;
+
+        padding:
+            10px 20px;
+    }
+
+    .profile-header span {
+        font-size: 38px;
+    }
+
+    .stat-card {
+        width: 100%;
+
+        padding:
+            23px 18px;
+    }
+
+    .stat-card h2 {
+        font-size: 32px;
+    }
+
+    .stat-card p {
+        font-size: 16px;
+    }
+
+    .profile-card {
+        border-radius: 17px;
+    }
+
+    .profile-card img {
+        height: 205px;
+    }
+
+    .profile-card-content {
+        padding: 19px;
+    }
+
+    .profile-card-content h3 {
+        font-size: 22px;
+    }
+
+    .profile-buttons {
+        flex-direction: column;
+
+        gap: 12px;
     }
 
     .edit-btn,
-    .delete-btn{
-        width:100%;
+    .delete-btn {
+        width: 100%;
     }
 
+    .profile-card:hover {
+        transform:
+            translateY(-5px);
+    }
+
+    .no-posts {
+        font-size: 22px;
+
+        padding:
+            35px 15px;
+    }
 }
